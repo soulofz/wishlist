@@ -1,6 +1,6 @@
 -- Создание таблицы wishlists
 CREATE TABLE IF NOT EXISTS wishlists (
-                                         id BIGINT PRIMARY KEY,
+                                         id BIGSERIAL PRIMARY KEY,
                                          name VARCHAR(255) NOT NULL,
                                          end_date DATE NOT NULL,
                                          user_id BIGINT NOT NULL,

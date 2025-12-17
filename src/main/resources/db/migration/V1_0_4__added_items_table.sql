@@ -1,6 +1,6 @@
 -- Создание таблицы items
 CREATE TABLE IF NOT EXISTS items (
-                                     id BIGINT PRIMARY KEY,
+                                     id BIGSERIAL PRIMARY KEY,
                                      name VARCHAR(255) NOT NULL,
                                      shop_link VARCHAR(255) NOT NULL,
                                      price BIGINT NOT NULL,
