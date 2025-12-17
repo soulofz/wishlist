@@ -23,8 +23,11 @@ public class Item {
     private String link;
     private Long price;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ItemStatus status;
 
     @ManyToOne
     @JoinColumn(name = "wishlist_id", nullable = false)

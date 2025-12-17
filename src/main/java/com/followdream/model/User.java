@@ -22,6 +22,9 @@ public class User {
     @GeneratedValue(generator = "user_generator")
     private Long id;
 
+    @Column(name = "avatar_path")
+    private String avatarPath;
+
     @Column(name = "first_name")
     private String firstName;
 

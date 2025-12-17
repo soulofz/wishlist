@@ -1,5 +1,5 @@
 package com.followdream.model;
 
-public enum Status {
+public enum ItemStatus {
     AVAILABLE, RESERVED, PURCHASED;
 }
