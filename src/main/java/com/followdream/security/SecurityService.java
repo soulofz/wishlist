@@ -59,6 +59,7 @@ public class SecurityService {
             security.setUsername(userRegistrationDto.getUsername());
             security.setPassword(bCryptPasswordEncoder.encode(userRegistrationDto.getPassword()));
             security.setEmail(userRegistrationDto.getEmail());
+            security.setUser(user);
             security.setRole(Role.USER);
             securityRepository.save(security);
             return true;
@@ -88,7 +89,7 @@ public class SecurityService {
         if(!bCryptPasswordEncoder.matches(request.getPassword(), security.get().getPassword())){
             throw new WrongPasswordException(request.getPassword());
         }
-        return Optional.ofNullable(jwtUtils.generateToken(security.get().getUsername()));
+        return Optional.ofNullable(jwtUtils.generateToken(security.get()));
     }
 
 }
