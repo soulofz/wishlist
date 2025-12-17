@@ -1,6 +1,7 @@
 package com.followdream.repository;
 
 import com.followdream.model.Security;
+import com.followdream.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,13 +13,17 @@ import java.util.Optional;
 public interface SecurityRepository extends JpaRepository<Security, Long> {
     boolean existsByUsername(String username);
 
-    @Query(nativeQuery = true, value = "SELECT * FROM security WHERE role=::roleParam")
-    List<Security> findByRole(String role);
+    boolean existsByEmail(String email);
+
+    @Query(nativeQuery = true, value = "SELECT * FROM security WHERE role = :roleParam")
+    List<Security> findByRole(String roleParam);
 
     Optional<Security> findByUsername(String username);
 
+    Optional<Security> findByEmail(String email);
+
     @Transactional
     @Modifying
-    @Query(nativeQuery = true,value = "UPDATE security SET role = 'ADMIN' WHERE user_id = ::userId")
+    @Query(nativeQuery = true, value = "UPDATE security SET role = 'ADMIN' WHERE user_id = :userId")
     int setAdminRoleByUSerId(Long userId);
 }
