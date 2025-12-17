@@ -47,6 +47,6 @@ public class User {
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
     private Security security;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Wishlist> wishlists;
 }
