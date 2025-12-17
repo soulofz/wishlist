@@ -1,6 +1,7 @@
 package com.followdream.exception;
 
-import by.tms.model.User;
+
+import com.followdream.model.User;
 
 public class UserNotFoundException extends RuntimeException {
     private final User user;
@@ -10,7 +11,7 @@ public class UserNotFoundException extends RuntimeException {
         this.user = user;
     }
 
-    public UserNotFoundException(int id) {
+    public UserNotFoundException(long id) {
         super();
         User user = new User();
         user.setId(id);
