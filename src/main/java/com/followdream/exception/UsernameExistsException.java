@@ -17,6 +17,6 @@ public class UsernameExistsException extends Exception {
 
     @Override
     public String toString() {
-        return "user with this username already exists";
+        return "User with this username already exists";
     }
 }
