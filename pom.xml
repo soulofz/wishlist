@@ -88,6 +88,11 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.30</version>
 		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+			<version>11.3.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -95,6 +100,18 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>11.3.1</version>
+				<configuration>
+					<url>jdbc:postgresql://localhost:5432/wishlist</url>
+					<user>owner</user>
+					<password>ownerpass</password>
+					<cleanDisabled>false</cleanDisabled>
+					<baselineVersion>1.0.0</baselineVersion>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

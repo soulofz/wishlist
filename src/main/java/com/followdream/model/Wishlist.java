@@ -24,6 +24,7 @@ public class Wishlist {
 
     @Column(nullable = false)
     private String name;
+
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
