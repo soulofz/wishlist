@@ -1,6 +1,7 @@
 package com.followdream.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.followdream.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class Security {
 
     @Column(unique = true, nullable = false)
     private String username;
+
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -28,7 +30,7 @@ public class Security {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
 
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)

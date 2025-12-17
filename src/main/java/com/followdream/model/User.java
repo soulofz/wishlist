@@ -3,9 +3,11 @@ package com.followdream.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Entity(name = "users")
@@ -32,11 +34,14 @@ public class User {
     private String lastName;
 
     private int age;
+
+    @CreationTimestamp
     private LocalDateTime created;
+
+    @UpdateTimestamp
     private LocalDateTime updated;
 
-    @Temporal(TemporalType.DATE)
-    private Date birthday;
+    private LocalDate birthday;
 
     @JsonIgnore
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)

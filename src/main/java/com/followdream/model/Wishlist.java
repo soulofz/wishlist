@@ -1,5 +1,6 @@
 package com.followdream.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,8 +12,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "items")
-@ToString(exclude = "items")
+@EqualsAndHashCode(exclude = {"user", "items"})
+@ToString(exclude = {"user", "items"})
 
 public class Wishlist {
 
@@ -21,10 +22,12 @@ public class Wishlist {
     @GeneratedValue(generator = "wishlist_generator")
     private Long id;
 
+    @Column(nullable = false)
     private String name;
-
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
