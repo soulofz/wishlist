@@ -2,19 +2,19 @@ package com.followdream.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import org.springframework.stereotype.Component;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity(name = "users")
 @Data
-@EqualsAndHashCode(exclude = "security")
-@ToString(exclude = "security")
-@Component
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(exclude = {"security", "wishlists"})
+@ToString(exclude = {"security", "wishlists"})
 public class User {
 
     @Id
@@ -31,9 +31,14 @@ public class User {
     private int age;
     private LocalDateTime created;
     private LocalDateTime updated;
+
+    @Temporal(TemporalType.DATE)
     private Date birthday;
 
     @JsonIgnore
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
     private Security security;
+
+    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL)
+    private List<Wishlist> wishlists;
 }
