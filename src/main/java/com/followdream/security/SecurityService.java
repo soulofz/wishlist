@@ -1,5 +1,7 @@
 package com.followdream.security;
 
+import com.followdream.exception.ForbiddenException;
+import com.followdream.exception.UserNotFoundException;
 import com.followdream.exception.UsernameExistsException;
 import com.followdream.exception.WrongPasswordException;
 import com.followdream.model.Security;
@@ -84,13 +86,21 @@ public class SecurityService {
 
     public Optional<String> generateJwt(AuthRequest request) throws WrongPasswordException {
         Optional<Security> security = securityRepository.findByUsername(request.getUsername());
-        if(security.isEmpty()){
+        if (security.isEmpty()) {
             throw new UsernameNotFoundException(request.getUsername());
         }
-        if(!bCryptPasswordEncoder.matches(request.getPassword(), security.get().getPassword())){
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), security.get().getPassword())) {
             throw new WrongPasswordException(request.getPassword());
         }
         return Optional.ofNullable(jwtUtils.generateToken(security.get()));
     }
 
+    public Optional<Security> updateSecurity(Security security) throws ForbiddenException {
+        Optional<Security> securityFromDbOptional = getSecurityById(security.getId());
+        if (securityFromDbOptional.isPresent()) {
+            return Optional.of(securityRepository.saveAndFlush(security));
+        } else {
+            throw new ForbiddenException();
+        }
+    }
 }

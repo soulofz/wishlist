@@ -3,6 +3,7 @@ package com.followdream.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.followdream.model.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 @Entity(name = "security")
@@ -23,6 +24,7 @@ public class Security {
     private String username;
 
     @Column(unique = true, nullable = false)
+    @Email
     private String email;
 
     @JsonIgnore
