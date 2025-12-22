@@ -2,6 +2,7 @@ package com.followdream.controller;
 
 import com.followdream.exception.ForbiddenException;
 import com.followdream.model.User;
+import com.followdream.model.dto.UserResponseDto;
 import com.followdream.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,8 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable("username") String username)throws ForbiddenException {
-        Optional<User> user = userService.getUserByUsername(username);
+    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable("username") String username)throws ForbiddenException {
+        Optional<UserResponseDto> user = userService.getUserByUsername(username);
         if (user.isPresent()) {
             return new ResponseEntity<>(user.get(), HttpStatus.OK);
         }

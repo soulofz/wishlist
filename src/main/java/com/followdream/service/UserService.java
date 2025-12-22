@@ -3,6 +3,7 @@ package com.followdream.service;
 import com.followdream.exception.ForbiddenException;
 import com.followdream.model.Security;
 import com.followdream.model.User;
+import com.followdream.model.dto.UserResponseDto;
 import com.followdream.model.enums.Role;
 import com.followdream.repository.ItemRepository;
 import com.followdream.repository.SecurityRepository;
@@ -33,10 +34,26 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getUserByUsername(String username) throws UsernameNotFoundException {
+    public UserResponseDto convertToDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserResponseDto userResponseDto = new UserResponseDto();
+        Optional<Security> security = securityRepository.findById(user.getId());
+        userResponseDto.setUsername(security.get().getUsername());
+        userResponseDto.setBirthday(user.getBirthday());
+        userResponseDto.setFirstName(user.getFirstName());
+        userResponseDto.setLastName(user.getLastName());
+        userResponseDto.setAge(user.getAge());
+        return userResponseDto;
+    }
+
+    public Optional<UserResponseDto> getUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Security> security = securityRepository.findByUsername(username);
         if (security.isPresent()) {
-            return Optional.of(security.get().getUser());
+            User user = security.get().getUser();
+            UserResponseDto userResponseDto = convertToDto(user);
+            return Optional.of(userResponseDto);
         } else {
             throw new UsernameNotFoundException(username);
         }
