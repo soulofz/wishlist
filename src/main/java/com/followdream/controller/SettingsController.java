@@ -79,9 +79,16 @@ public class SettingsController {
             }
             security.setPassword(bCryptPasswordEncoder.encode(securityUpdateDto.getNewPassword()));
         }
+        if (securityUpdateDto.getUsername() != null && !securityUpdateDto.getUsername().isBlank()) {
+            Optional<Security> existingUsernameSecurity = securityRepository.findByUsername(securityUpdateDto.getUsername());
+            if(existingUsernameSecurity.isPresent() && existingUsernameSecurity.get().getId().equals(security.getId())) {
+                return ResponseEntity.badRequest().build();
+            }
+            security.setUsername(securityUpdateDto.getUsername());
+        }
         if (securityUpdateDto.getEmail() != null && !securityUpdateDto.getEmail().isBlank()) {
-            Optional<Security> existingSecurity = securityRepository.findByEmail(securityUpdateDto.getEmail());
-            if (existingSecurity.isPresent() && !existingSecurity.get().getId().equals(security.getId())) {
+            Optional<Security> existingEmailSecurity = securityRepository.findByEmail(securityUpdateDto.getEmail());
+            if (existingEmailSecurity.isPresent() && !existingEmailSecurity.get().getId().equals(security.getId())) {
                 return ResponseEntity.badRequest().build();
             }
             security.setEmail(securityUpdateDto.getEmail());
