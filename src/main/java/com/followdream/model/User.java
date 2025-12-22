@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 
 @Entity(name = "users")
 @Data
@@ -47,4 +48,24 @@ public class User {
     @JsonIgnore
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
     private Security security;
+
+
+    @PrePersist
+    private void onCreate() {
+        this.created = LocalDateTime.now();
+        this.updated = LocalDateTime.now();
+        calculateAge(); // Рассчитываем возраст при создании
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updated = LocalDateTime.now();
+        calculateAge(); // Пересчитываем возраст при обновлении
+    }
+
+    private void calculateAge() {
+        if (this.birthday != null) {
+            this.age = Period.between(this.birthday, LocalDate.now()).getYears();
+        }
+    }
 }

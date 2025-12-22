@@ -1,6 +1,7 @@
 package com.followdream.service;
 
 import com.followdream.exception.ForbiddenException;
+import com.followdream.exception.UserNotFoundException;
 import com.followdream.model.Security;
 import com.followdream.model.User;
 import com.followdream.model.dto.UserResponseDto;
@@ -9,15 +10,26 @@ import com.followdream.repository.ItemRepository;
 import com.followdream.repository.SecurityRepository;
 import com.followdream.repository.UserRepository;
 import com.followdream.repository.WishlistRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UserService {
+    private static final String AVATARS_DIR = "avatars";
+
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
     private final WishlistRepository wishlistRepository;
@@ -45,6 +57,9 @@ public class UserService {
         userResponseDto.setFirstName(user.getFirstName());
         userResponseDto.setLastName(user.getLastName());
         userResponseDto.setAge(user.getAge());
+        if (user.getAvatarPath() != null) {
+            userResponseDto.setAvatar(new File(user.getAvatarPath()));
+        }
         return userResponseDto;
     }
 
@@ -66,6 +81,42 @@ public class UserService {
             return userRepository.findById(id);
         } else {
             throw new ForbiddenException();
+        }
+    }
+
+    public Optional<User> updateUser(User user) throws ForbiddenException {
+        Optional<User> userFromDbOptional = getUserById(user.getId());
+        if (userFromDbOptional.isPresent()) {
+            return Optional.of(userRepository.saveAndFlush(user));
+        } else {
+            throw new UserNotFoundException(user);
+        }
+    }
+
+    public void uploadAvatar(MultipartFile file) {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<Security> userSecurity = securityRepository.findByUsername(username);
+            if (userSecurity.isEmpty()) {
+                throw new UsernameNotFoundException(username);
+            }
+            Path avatarRoot = Paths.get(AVATARS_DIR);
+            if (!Files.exists(avatarRoot)) {
+                Files.createDirectories(avatarRoot);
+            }
+            Path userDir = avatarRoot.resolve(username);
+            if (!Files.exists(userDir)) {
+                Files.createDirectories(userDir);
+            }
+            Path avatarPath = userDir.resolve(file.getOriginalFilename());
+            Files.copy(file.getInputStream(), avatarPath, StandardCopyOption.REPLACE_EXISTING);
+
+            User user = userSecurity.get().getUser();
+            user.setAvatarPath(avatarPath.toString());
+            userRepository.save(user);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Failed to upload avatar", e);
         }
     }
 }
