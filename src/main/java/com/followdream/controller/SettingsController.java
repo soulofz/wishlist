@@ -82,14 +82,7 @@ public class SettingsController {
             security.setPassword(bCryptPasswordEncoder.encode(securityUpdateDto.getNewPassword()));
             updated = true;
         }
-        if (securityUpdateDto.getUsername() != null && !securityUpdateDto.getUsername().isBlank()) {
-            Optional<Security> existingUsernameSecurity = securityRepository.findByUsername(securityUpdateDto.getUsername());
-            if (existingUsernameSecurity.isPresent() && !existingUsernameSecurity.get().getId().equals(security.getId())) {
-                return ResponseEntity.badRequest().build();
-            }
-            security.setUsername(securityUpdateDto.getUsername());
-            updated = true;
-        }
+
         if (securityUpdateDto.getEmail() != null && !securityUpdateDto.getEmail().isBlank()) {
             Optional<Security> existingEmailSecurity = securityRepository.findByEmail(securityUpdateDto.getEmail());
             if (existingEmailSecurity.isPresent() && !existingEmailSecurity.get().getId().equals(security.getId())) {
@@ -98,6 +91,7 @@ public class SettingsController {
             security.setEmail(securityUpdateDto.getEmail());
             updated = true;
         }
+
         if (!updated){
             return ResponseEntity.badRequest().build();
         }
@@ -106,6 +100,7 @@ public class SettingsController {
         User user = savedSecurity.getUser();
         if (user != null) {
             user.setUpdated(LocalDateTime.now());
+            userRepository.save(user);
         }
         return ResponseEntity.ok(savedSecurity);
     }

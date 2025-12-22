@@ -11,9 +11,6 @@ public class SecurityUpdateDto {
     @NotBlank(message = "Current password is required")
     private String currentPassword;
 
-    @Size(min = 5, max = 20)
-    private String username;
-
     @Size(min = 8, message = "New password must be at least 8 characters long")
     @Pattern(regexp = ".*\\d.*", message = "New password must contain at least one digit")
     private String newPassword;
