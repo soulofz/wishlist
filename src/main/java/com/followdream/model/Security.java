@@ -30,7 +30,7 @@ public class Security {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;
+    private Role role;
 
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)

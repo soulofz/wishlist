@@ -1,6 +1,5 @@
 package com.followdream.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,11 +26,6 @@ public class Wishlist {
 
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
     private List<Item> items;

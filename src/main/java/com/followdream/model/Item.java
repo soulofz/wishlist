@@ -32,14 +32,10 @@ public class Item {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    private ItemStatus status = ItemStatus.AVAILABLE;
+    private ItemStatus status;
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "wishlist_id", nullable = false)
     private Wishlist wishlist;
-
-    @ManyToOne
-    @JoinColumn(name = "reserved_by")
-    private User reservedBy;
 }

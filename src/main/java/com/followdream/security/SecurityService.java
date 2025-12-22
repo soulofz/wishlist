@@ -51,6 +51,7 @@ public class SecurityService {
         try {
             User user = new User();
             user.setAge(userRegistrationDto.getAge());
+            user.setBirthday(userRegistrationDto.getBirthday());
             user.setCreated(LocalDateTime.now());
             user.setUpdated(LocalDateTime.now());
             userRepository.save(user);

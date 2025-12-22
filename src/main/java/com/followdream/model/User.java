@@ -1,5 +1,6 @@
 package com.followdream.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,15 +9,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity(name = "users")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"security", "wishlists"})
-@ToString(exclude = {"security", "wishlists"})
+@EqualsAndHashCode(exclude = "security")
+@ToString(exclude = "security")
 public class User {
 
     @Id
@@ -41,12 +41,10 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updated;
 
+    @JsonFormat(pattern = "dd.MM.yyyy")
     private LocalDate birthday;
 
     @JsonIgnore
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
     private Security security;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Wishlist> wishlists;
 }

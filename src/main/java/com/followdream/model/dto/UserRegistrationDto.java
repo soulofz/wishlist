@@ -1,7 +1,12 @@
 package com.followdream.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.Period;
 
 @Component
 public class UserRegistrationDto {
@@ -18,6 +23,10 @@ public class UserRegistrationDto {
     private String email;
 
     @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy")
+    private LocalDate birthday;
+
+    @JsonIgnore
     private Integer age;
 
     public String getUsername() {
@@ -44,8 +53,22 @@ public class UserRegistrationDto {
         this.email = email;
     }
 
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+        if (this.birthday != null) {
+            this.age = Period.between(this.birthday, LocalDate.now()).getYears();
+        }
+    }
+
     public Integer getAge() {
-        return age;
+        if (this.birthday != null) {
+            return Period.between(this.birthday, LocalDate.now()).getYears();
+        }
+        return null;
     }
 
     public void setAge(Integer age) {
