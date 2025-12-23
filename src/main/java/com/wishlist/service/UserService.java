@@ -14,6 +14,10 @@ import com.wishlist.repository.WishlistRepository;
 import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +58,7 @@ public class UserService {
         this.securityService = securityService;
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         return securityService.getCurrentSecurity().getUser();
     }
 
@@ -206,6 +210,30 @@ public class UserService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete avatar", e);
         }
+    }
+
+    public ResponseEntity<Resource> getAvatarResponse(User user) {
+        if (user.getAvatarPath() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path path = Paths.get(storageRoot).resolve(user.getAvatarPath());
+        if (!Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new FileSystemResource(path);
+
+        String contentType;
+        try {
+            contentType = Files.probeContentType(path);
+        } catch (IOException e) {
+            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
     }
 
 }
