@@ -1,16 +1,19 @@
 package com.wishlist.security;
 
 import com.wishlist.exception.ForbiddenException;
+import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.exception.UsernameExistsException;
 import com.wishlist.exception.WrongPasswordException;
 import com.wishlist.model.Security;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.AuthRequest;
+import com.wishlist.model.dto.SecurityUpdateDto;
 import com.wishlist.model.dto.UserRegistrationDto;
 import com.wishlist.model.enums.Role;
 import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -71,12 +74,46 @@ public class SecurityService {
         return false;
     }
 
+    public Security getCurrentSecurity() {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        return securityRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(-1));
+    }
+
     public Optional<Security> getSecurityById(Long id) {
         return securityRepository.findById(id);
     }
 
     public Optional<Security> getSecurityByUsername(String username) {
         return securityRepository.findByUsername(username);
+    }
+
+    @Transactional
+    public void updateSecurity(SecurityUpdateDto dto) {
+        Security security = getCurrentSecurity();
+
+        if (!bCryptPasswordEncoder.matches(dto.getCurrentPassword(), security.getPassword())) {
+            throw new IllegalArgumentException("Wrong current password");
+        }
+
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+            if (bCryptPasswordEncoder.matches(dto.getNewPassword(), security.getPassword())) {
+                throw new IllegalArgumentException("New password must be different");
+            }
+            security.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            securityRepository.findByEmail(dto.getEmail())
+                    .filter(s -> !s.getId().equals(security.getId()))
+                    .ifPresent(s -> {
+                        throw new IllegalArgumentException("Email already in use");
+                    });
+            security.setEmail(dto.getEmail());
+        }
+
+        securityRepository.save(security);
     }
 
     public List<Security> getAllSecurityByRole(String role) {
@@ -92,14 +129,5 @@ public class SecurityService {
             throw new WrongPasswordException(request.getPassword());
         }
         return Optional.ofNullable(jwtUtils.generateToken(security.get()));
-    }
-
-    public Optional<Security> updateSecurity(Security security) throws ForbiddenException {
-        Optional<Security> securityFromDbOptional = getSecurityById(security.getId());
-        if (securityFromDbOptional.isPresent()) {
-            return Optional.of(securityRepository.saveAndFlush(security));
-        } else {
-            throw new ForbiddenException();
-        }
     }
 }
