@@ -56,4 +56,10 @@ public class CustomExceptionHandler {
         log.warn("Wrong password: {}", e.getMessage());
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(AvatarUploadException.class)
+    public ResponseEntity<HttpStatusCode> wrongPasswordException(AvatarUploadException e) {
+        log.warn("Avatar Upload Error: {}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
 }
