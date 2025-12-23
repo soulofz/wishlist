@@ -2,7 +2,6 @@ package com.wishlist.service;
 
 import com.wishlist.exception.AvatarUploadException;
 import com.wishlist.exception.ForbiddenException;
-import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.model.Security;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.UserResponseDto;
@@ -15,7 +14,6 @@ import com.wishlist.repository.WishlistRepository;
 import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
