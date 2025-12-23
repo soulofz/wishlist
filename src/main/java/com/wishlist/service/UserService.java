@@ -11,12 +11,13 @@ import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
 import com.wishlist.repository.WishlistRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +29,12 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class UserService {
-    private static final String AVATARS_DIR = "avatars";
+
+    @Value("${app.storage.root}")
+    private String storageRoot;
+
+    @Value("${app.storage.avatars}")
+    private String avatarsDir;
 
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
@@ -51,17 +57,20 @@ public class UserService {
             return null;
         }
         UserResponseDto userResponseDto = new UserResponseDto();
-        Optional<Security> security = securityRepository.findById(user.getId());
-        userResponseDto.setUsername(security.get().getUsername());
+        Security security = user.getSecurity();
+
+        userResponseDto.setUsername(security.getUsername());
         userResponseDto.setBirthday(user.getBirthday());
         userResponseDto.setFirstName(user.getFirstName());
         userResponseDto.setLastName(user.getLastName());
         userResponseDto.setAge(user.getAge());
+
         if (user.getAvatarPath() != null) {
-            userResponseDto.setAvatar(new File(user.getAvatarPath()));
+            userResponseDto.setAvatarUrl("/" + user.getAvatarPath());
         }
         return userResponseDto;
     }
+
 
     public Optional<UserResponseDto> getUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Security> security = securityRepository.findByUsername(username);
@@ -84,39 +93,93 @@ public class UserService {
         }
     }
 
-    public Optional<User> updateUser(User user) throws ForbiddenException {
-        Optional<User> userFromDbOptional = getUserById(user.getId());
-        if (userFromDbOptional.isPresent()) {
-            return Optional.of(userRepository.saveAndFlush(user));
-        } else {
-            throw new UserNotFoundException(user);
-        }
-    }
-
     public void uploadAvatar(MultipartFile file) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Security security = securityRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(-1));
+        User user = security.getUser();
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files allowed");
+        }
+
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File is too large");
+        }
+
+        String extension = getExtensionFromContentType(contentType);
+
         try {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Optional<Security> userSecurity = securityRepository.findByUsername(username);
-            if (userSecurity.isEmpty()) {
-                throw new UsernameNotFoundException(username);
+            Path userAvatarDir = Paths.get(storageRoot, avatarsDir, username);
+            Files.createDirectories(userAvatarDir);
+
+            try (var paths = Files.list(userAvatarDir)) {
+                paths.forEach(path -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (IOException e) {
+                        log.warn("Failed to delete old avatar file: {}", path, e);
+                    }
+                });
             }
-            Path avatarRoot = Paths.get(AVATARS_DIR);
-            if (!Files.exists(avatarRoot)) {
-                Files.createDirectories(avatarRoot);
-            }
-            Path userDir = avatarRoot.resolve(username);
-            if (!Files.exists(userDir)) {
-                Files.createDirectories(userDir);
-            }
-            Path avatarPath = userDir.resolve(file.getOriginalFilename());
+
+            Path avatarPath = userAvatarDir.resolve("avatar" + extension);
             Files.copy(file.getInputStream(), avatarPath, StandardCopyOption.REPLACE_EXISTING);
 
-            User user = userSecurity.get().getUser();
-            user.setAvatarPath(avatarPath.toString());
+            user.setAvatarPath(Paths.get(avatarsDir, username, "avatar" + extension).toString());
+
             userRepository.save(user);
+
         } catch (IOException e) {
-            log.error(e.getMessage());
             throw new RuntimeException("Failed to upload avatar", e);
         }
     }
+
+    private String getExtensionFromContentType(String contentType) {
+        switch (contentType.toLowerCase()) {
+            case "image/jpeg":
+                return ".jpg";
+            case "image/png":
+                return ".png";
+            case "image/gif":
+                throw new IllegalArgumentException("GIF is not allowed");
+            case "image/webp":
+                return ".webp";
+            case "image/bmp":
+                return ".bmp";
+            case "image/svg+xml":
+                throw new IllegalArgumentException("SVG is not allowed");
+            default:
+                return ".jpg";
+        }
+    }
+
+    @Transactional
+    public void deleteAvatar() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Security security = securityRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(-1));
+        User user = security.getUser();
+
+        if (user.getAvatarPath() == null || user.getAvatarPath().isEmpty()) {
+            return;
+        }
+
+        try {
+            Path avatarPath = Paths.get(storageRoot).resolve(user.getAvatarPath());
+            Files.deleteIfExists(avatarPath);
+
+            user.setAvatarPath(null);
+            userRepository.save(user);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete avatar", e);
+        }
+    }
+
 }

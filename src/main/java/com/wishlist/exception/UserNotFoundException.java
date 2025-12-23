@@ -1,6 +1,5 @@
 package com.wishlist.exception;
 
-
 import com.wishlist.model.User;
 
 public class UserNotFoundException extends RuntimeException {
@@ -17,7 +16,6 @@ public class UserNotFoundException extends RuntimeException {
         user.setId(id);
         this.user = user;
     }
-
 
     @Override
     public String toString() {

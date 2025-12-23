@@ -9,31 +9,31 @@ import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
 import com.wishlist.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/settings")
 public class SettingsController {
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
-    private final UserService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserService userService;
 
     public SettingsController(UserRepository userRepository, SecurityRepository securityRepository, UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
-        this.userService = userService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.userService = userService;
     }
 
     @PutMapping("/account")
@@ -58,6 +58,18 @@ public class SettingsController {
         }
         User updatedUser = userRepository.save(user);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/account/avatar")
+    public ResponseEntity<Void> uploadAvatar(@RequestParam MultipartFile file) {
+        userService.uploadAvatar(file);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/account/avatar")
+    public ResponseEntity<Void> deleteAvatar() {
+        userService.deleteAvatar();
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/security")

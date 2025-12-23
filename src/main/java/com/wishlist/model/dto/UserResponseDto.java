@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.File;
 import java.time.LocalDate;
 
 @Data
@@ -17,5 +16,5 @@ public class UserResponseDto {
     private String lastName;
     private Integer age;
     private LocalDate birthday;
-    private File avatar;
+    private String avatarUrl;
 }
