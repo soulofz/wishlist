@@ -1,6 +1,6 @@
 package com.followdream.exception;
 
-public class WrongPasswordException extends Exception{
+public class WrongPasswordException extends Exception {
     private String wrongPassword;
 
     public WrongPasswordException(String wrongPassword) {

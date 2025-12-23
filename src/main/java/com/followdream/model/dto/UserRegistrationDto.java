@@ -3,11 +3,13 @@ package com.followdream.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Period;
 
+@Data
 @Component
 public class UserRegistrationDto {
     @NotBlank
@@ -29,34 +31,6 @@ public class UserRegistrationDto {
     @JsonIgnore
     private Integer age;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
     public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
         if (this.birthday != null) {
@@ -69,9 +43,5 @@ public class UserRegistrationDto {
             return Period.between(this.birthday, LocalDate.now()).getYears();
         }
         return null;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
     }
 }

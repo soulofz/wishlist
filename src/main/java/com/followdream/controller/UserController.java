@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable("username") String username)throws ForbiddenException {
+    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable("username") String username) throws ForbiddenException {
         Optional<UserResponseDto> user = userService.getUserByUsername(username);
         if (user.isPresent()) {
             return new ResponseEntity<>(user.get(), HttpStatus.OK);

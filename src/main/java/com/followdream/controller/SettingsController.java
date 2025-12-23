@@ -92,7 +92,7 @@ public class SettingsController {
             updated = true;
         }
 
-        if (!updated){
+        if (!updated) {
             return ResponseEntity.badRequest().build();
         }
 

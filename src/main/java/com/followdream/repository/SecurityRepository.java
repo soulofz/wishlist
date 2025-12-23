@@ -1,7 +1,6 @@
 package com.followdream.repository;
 
 import com.followdream.model.Security;
-import com.followdream.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

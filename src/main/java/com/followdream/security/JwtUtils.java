@@ -27,7 +27,7 @@ public class JwtUtils {
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(Integer.parseInt(jwtExpirationMinutes))))
-                .signWith(SignatureAlgorithm.HS256,secret)
+                .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
 
@@ -35,7 +35,7 @@ public class JwtUtils {
         log.info("IN JwtUtils::validateToken");
         try {
             Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
-        } catch (JwtException e){
+        } catch (JwtException e) {
             log.error(e.getMessage());
             return false;
         } finally {

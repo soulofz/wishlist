@@ -11,8 +11,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"user", "items"})
-@ToString(exclude = {"user", "items"})
+@EqualsAndHashCode(exclude = "items")
+@ToString(exclude = "items")
 
 public class Wishlist {
 

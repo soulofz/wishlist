@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByWishlistId(Long wishlistId);
+
     List<Item> findByStatus(ItemStatus status);
+
     List<Item> findAllReservedById(Long userId);
 }
