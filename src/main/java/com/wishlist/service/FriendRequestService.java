@@ -14,8 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,6 +37,14 @@ public class FriendRequestService {
         this.securityService = securityService;
     }
 
+    private void createFriendRequest(User sender, User receiver, FriendRequestStatus status) {
+        FriendRequest newRequest = new FriendRequest();
+        newRequest.setSender(sender);
+        newRequest.setReceiver(receiver);
+        newRequest.setStatus(status);
+        newRequest.setCreated(LocalDateTime.now());
+        friendRequestRepository.save(newRequest);
+    }
 
     @Transactional
     public void sendFriendRequest(String receiverUsername) throws FriendRequestNotFoundException {
@@ -42,42 +52,45 @@ public class FriendRequestService {
         User receiver = userService.getUserByUsername(receiverUsername);
 
         if (sender.getId().equals(receiver.getId())) {
-            throw new IllegalArgumentException("You can not send friend request to yourself");
+            throw new IllegalArgumentException("You cannot send a friend request to yourself");
         }
 
-        if (friendRequestRepository.findBySenderIdAndReceiverId(sender.getId(), receiver.getId()).isPresent()) {
-            throw new IllegalStateException("Friend request already exists");
-        }
+        Optional<FriendRequest> existingRequest = friendRequestRepository
+                .findTopBySenderIdAndReceiverIdOrderByCreatedDesc(sender.getId(), receiver.getId());
 
-        FriendKey key = new FriendKey(sender.getId(), receiver.getId());
-        if (friendRepository.existsById(key)) {
-            throw new IllegalStateException("You are already friends");
-        }
+        if (existingRequest.isPresent()) {
+            FriendRequest lastRequest = existingRequest.get();
 
-        FriendRequest request = new FriendRequest();
-        request.setSender(sender);
-        request.setReceiver(receiver);
-        request.setStatus(FriendRequestStatus.PENDING);
-        friendRequestRepository.save(request);
+            if (lastRequest.getStatus() == FriendRequestStatus.REJECTED || lastRequest.getStatus() == FriendRequestStatus.CANCELLED) {
+                createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+                return;
+            }
+
+            if (lastRequest.getStatus() == FriendRequestStatus.PENDING) {
+                throw new IllegalStateException("Friend request is already in progress");
+            }
+
+            if (lastRequest.getStatus() == FriendRequestStatus.ACCEPTED) {
+                FriendKey key = new FriendKey(sender.getId(), receiver.getId());
+                if (!friendRepository.existsById(key)) {
+                    createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+                } else {
+                    throw new IllegalStateException("You are already friends");
+                }
+            }
+        } else {
+            createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+        }
     }
+
 
     public void acceptFriendRequest(String senderUsername) throws FriendRequestNotFoundException {
         User receiver = userService.getCurrentUser();
         User sender = userService.getUserByUsername(senderUsername);
 
-
-        FriendRequest request = null;
-        try {
-            request = friendRequestRepository.findBySenderIdAndReceiverId(sender.getId(), receiver.getId())
-                    .orElseThrow(() -> new FriendRequestNotFoundException(sender.getId(), receiver.getId()));
-        } catch (FriendRequestNotFoundException e) {
-            log.error("Friend request not found{}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        if (request.getStatus() != FriendRequestStatus.PENDING) {
-            throw new IllegalStateException("Request is not pending");
-        }
+        FriendRequest request = friendRequestRepository
+                .findTopBySenderIdAndReceiverIdAndStatusOrderByCreatedDesc(sender.getId(), receiver.getId(), FriendRequestStatus.PENDING)
+                .orElseThrow(() -> new FriendRequestNotFoundException(sender.getId(), receiver.getId()));
 
         request.setStatus(FriendRequestStatus.ACCEPTED);
         friendRequestRepository.save(request);
@@ -92,12 +105,8 @@ public class FriendRequestService {
         User sender = userService.getUserByUsername(senderUsername);
 
         FriendRequest request = friendRequestRepository
-                .findBySenderIdAndReceiverId(sender.getId(), receiver.getId())
+                .findTopBySenderIdAndReceiverIdAndStatusOrderByCreatedDesc(sender.getId(), receiver.getId(), FriendRequestStatus.PENDING)
                 .orElseThrow(() -> new FriendRequestNotFoundException(sender.getId(), receiver.getId()));
-
-        if (request.getStatus() != FriendRequestStatus.PENDING) {
-            throw new IllegalStateException("Request is not pending");
-        }
 
         request.setStatus(FriendRequestStatus.REJECTED);
         friendRequestRepository.save(request);
@@ -108,15 +117,26 @@ public class FriendRequestService {
         User sender = userService.getCurrentUser();
         User receiver = userService.getUserByUsername(receiverUsername);
 
-        FriendRequest request = friendRequestRepository.findBySenderIdAndReceiverId(sender.getId(), receiver.getId())
-                .orElseThrow(() -> new FriendRequestNotFoundException(receiver.getId(), sender.getId()));
-
-        if (request.getStatus() != FriendRequestStatus.PENDING) {
-            throw new IllegalStateException("You cannot cancel an already processed request");
-        }
+        FriendRequest request = friendRequestRepository
+                .findTopBySenderIdAndReceiverIdAndStatusOrderByCreatedDesc(sender.getId(), receiver.getId(), FriendRequestStatus.PENDING)
+                .orElseThrow(() -> new FriendRequestNotFoundException(sender.getId(), receiver.getId()));
 
         request.setStatus(FriendRequestStatus.CANCELLED);
         friendRequestRepository.save(request);
+    }
+
+    private FriendRequestDto createFriendRequestDto(FriendRequest request, User relatedUser) {
+        User user = (relatedUser.equals(request.getSender())) ? request.getReceiver() : request.getSender();
+        FriendRequestDto dto = new FriendRequestDto();
+        dto.setUsername(user.getSecurity().getUsername());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setStatus(request.getStatus());
+        dto.setCreated(request.getCreated());
+        if (user.getAvatarPath() != null) {
+            dto.setAvatarUrl("/" + user.getAvatarPath());
+        }
+        return dto;
     }
 
     public List<FriendRequestDto> getIncomingRequests(Long currentUserId) {
@@ -126,16 +146,7 @@ public class FriendRequestService {
         List<FriendRequestDto> responseList = new ArrayList<>();
 
         for (FriendRequest request : requests) {
-            User sender = request.getSender();
-            FriendRequestDto dto = new FriendRequestDto();
-            dto.setUsername(sender.getSecurity().getUsername());
-            dto.setFirstName(sender.getFirstName());
-            dto.setLastName(sender.getLastName());
-            dto.setStatus(request.getStatus());
-            dto.setCreated(request.getCreated());
-            if (sender.getAvatarPath() != null) {
-                dto.setAvatarUrl("/" + sender.getAvatarPath());
-            }
+            FriendRequestDto dto = createFriendRequestDto(request, currentUser);
             responseList.add(dto);
         }
         return responseList;
@@ -148,16 +159,7 @@ public class FriendRequestService {
         List<FriendRequestDto> responseList = new ArrayList<>();
 
         for (FriendRequest request : requests) {
-            User receiver = request.getReceiver();
-            FriendRequestDto dto = new FriendRequestDto();
-            dto.setUsername(receiver.getSecurity().getUsername());
-            dto.setFirstName(receiver.getFirstName());
-            dto.setLastName(receiver.getLastName());
-            dto.setStatus(request.getStatus());
-            dto.setCreated(request.getCreated());
-            if (receiver.getAvatarPath() != null) {
-                dto.setAvatarUrl("/" + receiver.getAvatarPath());
-            }
+            FriendRequestDto dto = createFriendRequestDto(request, currentUser);
             responseList.add(dto);
         }
         return responseList;

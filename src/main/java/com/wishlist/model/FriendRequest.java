@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity(name = "friend_requests")
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"sender_id", "receiver_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
