@@ -1,16 +1,12 @@
 package com.wishlist.service;
 
 import com.wishlist.exception.AvatarUploadException;
-import com.wishlist.exception.ForbiddenException;
 import com.wishlist.model.Security;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.UserResponseDto;
 import com.wishlist.model.dto.UserUpdateDto;
-import com.wishlist.model.enums.Role;
-import com.wishlist.repository.ItemRepository;
 import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
-import com.wishlist.repository.WishlistRepository;
 import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,10 +42,14 @@ public class UserService {
 
     private final SecurityService securityService;
     private final UserRepository userRepository;
+    private final SecurityRepository securityRepository;
 
-    public UserService(UserRepository userRepository, SecurityService securityService) {
+    public UserService(UserRepository userRepository,
+                       SecurityService securityService,
+                       SecurityRepository securityRepository) {
         this.userRepository = userRepository;
         this.securityService = securityService;
+        this.securityRepository = securityRepository;
     }
 
     public User getCurrentUser() {
@@ -79,20 +79,15 @@ public class UserService {
         return userResponseDto;
     }
 
-
-    public Optional<UserResponseDto> getUserByUsername(String username) throws UsernameNotFoundException {
-        User user = getCurrentUser();
-        UserResponseDto userResponseDto = convertToDto(user);
-        return Optional.of(userResponseDto);
+    public User getUserByUsername(String username) {
+        Security security = securityRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        return security.getUser();
     }
 
 
-    public Optional<User> getUserById(long id) throws ForbiddenException {
-        User currentUser = getCurrentUser();
-        if (currentUser.getSecurity().getRole().equals(Role.ADMIN)) {
-            return userRepository.findById(id);
-        }
-        throw new ForbiddenException();
+    public Optional<User> getUserById(long id) {
+        return userRepository.findById(id);
     }
 
     @Transactional

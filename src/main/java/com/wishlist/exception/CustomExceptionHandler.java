@@ -48,7 +48,7 @@ public class CustomExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<HttpStatusCode> usernameNotFoundException(UsernameNotFoundException e) {
         log.warn("Username not found: {}", e.getMessage());
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(WrongPasswordException.class)
@@ -60,6 +60,12 @@ public class CustomExceptionHandler {
     @ExceptionHandler(AvatarUploadException.class)
     public ResponseEntity<HttpStatusCode> wrongPasswordException(AvatarUploadException e) {
         log.warn("Avatar Upload Error: {}", e.getMessage());
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(FriendRequestNotFoundException.class)
+    public ResponseEntity<HttpStatusCode> friendRequestNotFoundException(FriendRequestNotFoundException e) {
+        log.warn("Friend request not found: {}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
