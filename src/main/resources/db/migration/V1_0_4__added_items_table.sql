@@ -11,11 +11,3 @@ CREATE TABLE IF NOT EXISTS items (
                                      FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE,
                                      FOREIGN KEY (reserved_by) REFERENCES users(id) ON DELETE SET NULL
 );
-
--- Последовательность для items
-CREATE SEQUENCE IF NOT EXISTS item_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;

@@ -8,11 +8,3 @@ CREATE TABLE IF NOT EXISTS security (
                                         user_id BIGINT NOT NULL UNIQUE,
                                         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- Последовательность для security
-CREATE SEQUENCE IF NOT EXISTS security_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;

@@ -9,11 +9,3 @@ CREATE TABLE IF NOT EXISTS users (
                                      updated TIMESTAMP,
                                      birthday DATE
 );
-
--- Последовательность для users
-CREATE SEQUENCE IF NOT EXISTS user_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
