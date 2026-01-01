@@ -64,7 +64,7 @@ public class SecurityController {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
     @GetMapping("/{id}")
     public ResponseEntity<Security> getSecurityById(@PathVariable("id") long id) {
         Optional<Security> security = securityService.getSecurityById(id);
