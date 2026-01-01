@@ -38,7 +38,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -54,7 +54,7 @@ public class UserController {
         return ResponseEntity.ok(usersDto);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
     @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
