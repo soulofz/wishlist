@@ -15,7 +15,7 @@ import lombok.*;
 public class Item {
 
     @Id
-    @SequenceGenerator(name = "item_generator", sequenceName = "item_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "item_generator", sequenceName = "items_id_seq", allocationSize = 1)
     @GeneratedValue(generator = "item_generator")
     private Long id;
 
@@ -32,7 +32,8 @@ public class Item {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    private ItemStatus status;
+    @Column(nullable = false)
+    private ItemStatus status = ItemStatus.AVAILABLE;
 
     @JsonIgnore
     @ManyToOne

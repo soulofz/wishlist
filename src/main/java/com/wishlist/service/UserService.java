@@ -38,23 +38,17 @@ public class UserService {
 
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
-    private final SecurityService securityService;
     @Value("${app.storage.root}")
     private String storageRoot;
 
     @Value("${app.storage.avatars}")
     private String avatarsDir;
 
+    private final SecurityService securityService;
     private final UserRepository userRepository;
-    private final SecurityRepository securityRepository;
-    private final WishlistRepository wishlistRepository;
-    private final ItemRepository itemRepository;
 
-    public UserService(UserRepository userRepository, SecurityRepository securityRepository, WishlistRepository wishlistRepository, ItemRepository itemRepository, SecurityService securityService) {
+    public UserService(UserRepository userRepository, SecurityService securityService) {
         this.userRepository = userRepository;
-        this.securityRepository = securityRepository;
-        this.wishlistRepository = wishlistRepository;
-        this.itemRepository = itemRepository;
         this.securityService = securityService;
     }
 

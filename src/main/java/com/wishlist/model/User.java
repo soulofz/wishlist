@@ -21,7 +21,7 @@ import java.time.Period;
 public class User {
 
     @Id
-    @SequenceGenerator(name = "user_generator", sequenceName = "user_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "user_generator", sequenceName = "users_id_seq", allocationSize = 1)
     @GeneratedValue(generator = "user_generator")
     private Long id;
 

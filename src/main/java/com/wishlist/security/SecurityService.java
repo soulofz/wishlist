@@ -1,6 +1,5 @@
 package com.wishlist.security;
 
-import com.wishlist.exception.ForbiddenException;
 import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.exception.UsernameExistsException;
 import com.wishlist.exception.WrongPasswordException;
