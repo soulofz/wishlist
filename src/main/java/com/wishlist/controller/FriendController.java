@@ -8,9 +8,12 @@ import com.wishlist.service.FriendRequestService;
 import com.wishlist.service.FriendService;
 import com.wishlist.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/friends")
@@ -36,25 +39,25 @@ public class FriendController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/requests/{receiverUsername}")
+    @PostMapping("/requests/send/{receiverUsername}")
     public ResponseEntity<Void> sendFriendRequest(@PathVariable String receiverUsername) throws FriendRequestNotFoundException {
         friendRequestService.sendFriendRequest(receiverUsername);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/requests/{senderUsername}/accept")
+    @PostMapping("/requests/accept/{senderUsername}")
     public ResponseEntity<Void> acceptFriendRequest(@PathVariable String senderUsername) throws FriendRequestNotFoundException {
         friendRequestService.acceptFriendRequest(senderUsername);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/requests/{senderUsername}/reject")
+    @PostMapping("/requests/reject/{senderUsername}")
     public ResponseEntity<Void> rejectFriendRequest(@PathVariable String senderUsername) throws FriendRequestNotFoundException {
         friendRequestService.rejectFriendRequest(senderUsername);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/requests/{receiverUsername}/cancel")
+    @PostMapping("/requests/cancel/{receiverUsername}")
     public ResponseEntity<Void> cancelFriendRequest(@PathVariable String receiverUsername) throws FriendRequestNotFoundException {
         friendRequestService.cancelFriendRequest(receiverUsername);
         return ResponseEntity.ok().build();
@@ -72,5 +75,20 @@ public class FriendController {
         User currentUser = userService.getCurrentUser();
         List<FriendRequestDto> outgoingRequests = friendRequestService.getOutgoingRequests(currentUser.getId());
         return ResponseEntity.ok(outgoingRequests);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
+    @GetMapping("/requests/{username}")
+    public ResponseEntity<Map<String, List<FriendRequestDto>>> getAllFriendRequestsForUser(@PathVariable String username) {
+        User user = userService.getUserByUsername(username);
+
+        List<FriendRequestDto> incomingRequests = friendRequestService.getIncomingRequests(user.getId());
+        List<FriendRequestDto> outgoingRequests = friendRequestService.getOutgoingRequests(user.getId());
+
+        Map<String, List<FriendRequestDto>> response = new HashMap<>();
+        response.put("incoming", incomingRequests);
+        response.put("outgoing", outgoingRequests);
+
+        return ResponseEntity.ok(response);
     }
 }
