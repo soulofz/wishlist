@@ -85,7 +85,6 @@ public class UserService {
         return security.getUser();
     }
 
-
     public Optional<User> getUserById(long id) {
         return userRepository.findById(id);
     }
@@ -224,5 +223,4 @@ public class UserService {
                 .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }
-
 }

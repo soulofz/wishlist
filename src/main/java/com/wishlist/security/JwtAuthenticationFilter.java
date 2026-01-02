@@ -15,6 +15,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class JwtAuthenticationFilter implements Filter {
+
     private final JwtUtils jwtUtils;
     private final CustomUserDetailService customUserDetailService;
 

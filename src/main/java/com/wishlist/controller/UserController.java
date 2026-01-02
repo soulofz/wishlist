@@ -73,7 +73,6 @@ public class UserController {
         return ResponseEntity.ok(userResponseDto);
     }
 
-
     @GetMapping("/{username}/avatar")
     public ResponseEntity<Resource> getUserAvatar(@PathVariable String username) {
         User user = securityRepository.findByUsername(username)

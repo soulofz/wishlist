@@ -26,6 +26,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/security")
 public class SecurityController {
+
     private final UserService userService;
     private final SecurityService securityService;
 

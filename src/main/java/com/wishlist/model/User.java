@@ -49,7 +49,6 @@ public class User {
     @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
     private Security security;
 
-
     @PrePersist
     private void onCreate() {
         this.created = LocalDateTime.now();
@@ -73,5 +72,4 @@ public class User {
             this.age = Period.between(this.birthday, LocalDate.now()).getYears();
         }
     }
-
 }

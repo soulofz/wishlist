@@ -26,6 +26,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class SecurityService {
+
     private final UserRepository userRepository;
     private final SecurityRepository securityRepository;
     private final JwtUtils jwtUtils;

@@ -1,6 +1,5 @@
 package com.wishlist.security;
 
-import com.wishlist.model.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

@@ -10,6 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 @Component
 public class LogInterceptor implements HandlerInterceptor {
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("Before controller: {}", request.getRequestURI());

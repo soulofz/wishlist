@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FriendRequestDto {
+
     private String username;
     private String firstName;
     private String lastName;

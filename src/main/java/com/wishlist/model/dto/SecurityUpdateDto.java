@@ -8,6 +8,7 @@ import lombok.Data;
 
 @Data
 public class SecurityUpdateDto {
+    
     @NotBlank(message = "Current password is required")
     private String currentPassword;
 

@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Service
 public class CustomUserDetailService implements UserDetailsService {
+
     private SecurityRepository securityRepository;
 
     public CustomUserDetailService(SecurityRepository securityRepository) {

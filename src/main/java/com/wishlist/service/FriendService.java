@@ -34,7 +34,6 @@ public class FriendService {
         this.securityService = securityService;
     }
 
-
     @Transactional
     public void removeFriend(String username) {
         User currentUser = userService.getCurrentUser();
@@ -43,7 +42,6 @@ public class FriendService {
         friendRepository.deleteById(new FriendKey(currentUser.getId(), friend.getId()));
         friendRepository.deleteById(new FriendKey(friend.getId(), currentUser.getId()));
     }
-
 
     public List<FriendResponseDto> getFriends() {
         User currentUser = userService.getCurrentUser();

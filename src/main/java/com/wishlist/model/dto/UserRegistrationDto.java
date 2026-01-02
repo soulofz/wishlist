@@ -12,6 +12,7 @@ import java.time.Period;
 @Data
 @Component
 public class UserRegistrationDto {
+
     @NotBlank
     @Size(min = 5, max = 20)
     private String username;
