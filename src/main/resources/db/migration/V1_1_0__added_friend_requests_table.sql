@@ -6,9 +6,7 @@ CREATE TABLE IF NOT EXISTS friend_requests (
                                                status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
                                                created TIMESTAMP NOT NULL DEFAULT NOW(),
                                                FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-                                               FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
-                                               CONSTRAINT uq_friend_request_pair
-                                                   UNIQUE (sender_id, receiver_id)
+                                               FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Создание индексов для friend_requests

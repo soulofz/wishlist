@@ -29,4 +29,7 @@ public class Wishlist {
 
     @OneToMany(mappedBy = "wishlist", cascade = CascadeType.ALL)
     private List<Item> items;
+
+    @Column(nullable = false)
+    private int count = 0;
 }
