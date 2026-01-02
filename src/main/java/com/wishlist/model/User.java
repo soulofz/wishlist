@@ -60,7 +60,12 @@ public class User {
     @PreUpdate
     private void onUpdate() {
         this.updated = LocalDateTime.now();
-        calculateAge(); // Пересчитываем возраст при обновлении
+        calculateAge();
+    }
+
+    @PostLoad
+    private void onLoad() {
+        calculateAge();
     }
 
     private void calculateAge() {
@@ -68,4 +73,5 @@ public class User {
             this.age = Period.between(this.birthday, LocalDate.now()).getYears();
         }
     }
+
 }
