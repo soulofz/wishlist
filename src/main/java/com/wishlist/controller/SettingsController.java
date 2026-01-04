@@ -6,7 +6,6 @@ import com.wishlist.model.dto.UserUpdateDto;
 import com.wishlist.security.SecurityService;
 import com.wishlist.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/settings")
 public class SettingsController {
-
-    @Value("${app.storage.root}")
-    private String storageRoot;
 
     private final UserService userService;
     private final SecurityService securityService;
@@ -46,7 +42,7 @@ public class SettingsController {
 
     @GetMapping("/account/avatar")
     public ResponseEntity<Resource> getMyAvatar() {
-        return userService.getAvatarResponse(userService.getCurrentUser());
+        return userService.getAvatar(userService.getCurrentUser());
     }
 
     @PutMapping("/security")

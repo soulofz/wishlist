@@ -20,18 +20,12 @@ import java.util.List;
 public class FriendService {
 
     private final FriendRepository friendRepository;
-    private final FriendRequestRepository friendRequestRepository;
     private final UserService userService;
-    private final SecurityService securityService;
 
-    public FriendService(FriendRequestRepository friendRequestRepository,
-                         FriendRepository friendRepository,
-                         UserService userService,
-                         SecurityService securityService) {
-        this.friendRequestRepository = friendRequestRepository;
+    public FriendService(FriendRepository friendRepository,
+                         UserService userService) {
         this.friendRepository = friendRepository;
         this.userService = userService;
-        this.securityService = securityService;
     }
 
     @Transactional

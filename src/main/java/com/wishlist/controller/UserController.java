@@ -79,6 +79,6 @@ public class UserController {
                 .orElseThrow(() -> new UserNotFoundException(-1))
                 .getUser();
 
-        return userService.getAvatarResponse(user);
+        return userService.getAvatar(user);
     }
 }

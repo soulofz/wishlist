@@ -200,7 +200,7 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<Resource> getAvatarResponse(User user) {
+    public ResponseEntity<Resource> getAvatar(User user) {
         if (user.getAvatarPath() == null) {
             return ResponseEntity.notFound().build();
         }

@@ -66,12 +66,61 @@ public class SecurityController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
-    @GetMapping("/{id}")
-    public ResponseEntity<Security> getSecurityById(@PathVariable("id") long id) {
+    @GetMapping("/{securityId}")
+    public ResponseEntity<Security> getSecurityById(@PathVariable("securityId") long id) {
         Optional<Security> security = securityService.getSecurityById(id);
         if (security.isPresent()) {
             return new ResponseEntity<>(security.get(), HttpStatus.OK);
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
+    @GetMapping("/admins")
+    public ResponseEntity<List<Security>> getAdmins() {
+       return ResponseEntity.ok(securityService.getAllAdmins());
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
+    @GetMapping("/moderators")
+    public ResponseEntity<List<Security>> getModerators() {
+        return ResponseEntity.ok(securityService.getAllModerators());
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
+    @GetMapping("/users")
+    public ResponseEntity<List<Security>> getUsers() {
+        return ResponseEntity.ok(securityService.getAllUsers());
+    }
+
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("/{securityId}/makeAdmin")
+    public ResponseEntity<HttpStatusCode> makeAdminById(@PathVariable("securityId") Long securityId) {
+        if (securityService.setAdmin(securityId)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PostMapping("/{securityId}/makeModerator")
+    public ResponseEntity<HttpStatusCode> makeModeratorById(@PathVariable("securityId") Long securityId) {
+        if (securityService.setModerator(securityId)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'OWNER')")
+    @PostMapping("/{securityId}/makeUser")
+    public ResponseEntity<HttpStatusCode> makeUserById(@PathVariable("securityId") Long securityId) {
+        if (securityService.setUser(securityId)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
 }

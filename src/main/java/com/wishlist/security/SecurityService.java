@@ -1,5 +1,6 @@
 package com.wishlist.security;
 
+import com.wishlist.exception.ForbiddenException;
 import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.exception.UsernameExistsException;
 import com.wishlist.exception.WrongPasswordException;
@@ -11,7 +12,9 @@ import com.wishlist.model.dto.UserRegistrationDto;
 import com.wishlist.model.enums.Role;
 import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
+import com.wishlist.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,7 +35,10 @@ public class SecurityService {
     private final JwtUtils jwtUtils;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public SecurityService(UserRepository userRepository, SecurityRepository securityRepository, JwtUtils jwtUtils, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public SecurityService(UserRepository userRepository,
+                           SecurityRepository securityRepository,
+                           JwtUtils jwtUtils,
+                           BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.securityRepository = securityRepository;
         this.jwtUtils = jwtUtils;
@@ -116,8 +122,20 @@ public class SecurityService {
         securityRepository.save(security);
     }
 
-    public List<Security> getAllSecurityByRole(String role) {
-        return securityRepository.findByRole(role);
+    public List<Security> getAllSecurityByRole(Role role) {
+        return securityRepository.findByRole(role.name());
+    }
+
+    public List<Security> getAllAdmins() {
+        return getAllSecurityByRole(Role.ADMIN);
+    }
+
+    public List<Security> getAllModerators() {
+        return getAllSecurityByRole(Role.MODERATOR);
+    }
+
+    public List<Security> getAllUsers() {
+        return getAllSecurityByRole(Role.USER);
     }
 
     public Optional<String> generateJwt(AuthRequest request) throws WrongPasswordException {
@@ -129,5 +147,66 @@ public class SecurityService {
             throw new WrongPasswordException(request.getPassword());
         }
         return Optional.ofNullable(jwtUtils.generateToken(security.get()));
+    }
+
+    private void ensureRoleChangeAllowed(
+            Long actorSecurityId,
+            Long targetSecurityId,
+            Role actorRole,
+            Role targetRole,
+            Role newRole
+    ) {
+        if (actorSecurityId.equals(targetSecurityId)) {
+            throw new AccessDeniedException("You cannot change your own role");
+        }
+
+        if (targetRole == null) {
+            throw new IllegalStateException("Target user role is undefined");
+        }
+
+        if (targetRole.getLevel() >= actorRole.getLevel()) {
+            throw new AccessDeniedException("You have no permission to modify this user");
+        }
+
+        if (newRole.getLevel() >= actorRole.getLevel()) {
+            throw new AccessDeniedException("You cannot assign this role");
+        }
+
+        if (targetRole == Role.OWNER && actorRole != Role.OWNER) {
+            throw new AccessDeniedException("Only OWNER may modify OWNER accounts");
+        }
+    }
+
+    public boolean updateRoleById(Long securityId, Role role) {
+
+        if (!securityRepository.existsById(securityId)) {
+            throw new UserNotFoundException(securityId);
+        }
+
+        Security actorSecurity = getCurrentSecurity();
+
+        Role actorRole = actorSecurity.getRole();
+        Role targetRole = securityRepository.getRoleById(securityId);
+
+        ensureRoleChangeAllowed(
+                actorSecurity.getId(),
+                securityId,
+                actorRole,
+                targetRole,
+                role);
+
+        return (securityRepository.updateRoleById(securityId, role.name())) > 0;
+    }
+
+    public boolean setAdmin(Long securityId) {
+        return updateRoleById(securityId, Role.ADMIN);
+    }
+
+    public boolean setModerator(Long securityId) {
+        return updateRoleById(securityId, Role.MODERATOR);
+    }
+
+    public boolean setUser(Long securityId) {
+        return updateRoleById(securityId, Role.USER);
     }
 }
