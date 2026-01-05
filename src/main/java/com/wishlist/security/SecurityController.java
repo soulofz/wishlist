@@ -6,7 +6,7 @@ import com.wishlist.model.Security;
 import com.wishlist.model.dto.AuthRequest;
 import com.wishlist.model.dto.AuthResponse;
 import com.wishlist.model.dto.UserRegistrationDto;
-import com.wishlist.service.UserService;
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,12 @@ import java.util.Optional;
 @RequestMapping("/security")
 public class SecurityController {
 
-    private final UserService userService;
     private final SecurityService securityService;
+    private final JwtUtils jwtUtils;
 
-    public SecurityController(UserService userService, SecurityService securityService) {
-        this.userService = userService;
+    public SecurityController(SecurityService securityService, JwtUtils jwtUtils) {
         this.securityService = securityService;
+        this.jwtUtils = jwtUtils;
     }
 
     @PostMapping("/registration")
@@ -54,15 +55,42 @@ public class SecurityController {
     }
 
     @PostMapping("/jwt")
-    public ResponseEntity<AuthResponse> generateJwtToken(@RequestBody AuthRequest authRequest) throws WrongPasswordException {
+    public ResponseEntity<AuthResponse> generateJwtToken(@Valid @RequestBody AuthRequest authRequest) throws WrongPasswordException {
         if (authRequest == null || authRequest.getUsername() == null || authRequest.getPassword() == null) {
             throw new ValidationException("Invalid request");
         }
-        Optional<String> jwt = securityService.generateJwt(authRequest);
-        if (jwt.isPresent()) {
-            return new ResponseEntity<>(new AuthResponse(jwt.get()), HttpStatus.OK);
+        String accessToken = securityService.generateAccessToken(authRequest);
+        String refreshToken = securityService.generateRefreshToken(authRequest);
+
+        if (accessToken != null && refreshToken != null) {
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
         }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshToken(@RequestBody String refreshToken) {
+        try {
+            String username = jwtUtils.getUsernameFromToken(refreshToken);
+            Security security = securityService.getSecurityByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException(username));
+
+            if (security != null && jwtUtils.validateToken(refreshToken)) {
+                String newAccessToken = jwtUtils.generateToken(security);
+                return ResponseEntity.ok(newAccessToken);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+
+        } catch (UsernameNotFoundException e) {
+            log.error("User not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (JwtException e) {
+            log.error("Invalid JWT token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT token");
+        } catch (Exception e) {
+            log.error("Error while refreshing token: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error while refreshing token");
+        }
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
@@ -78,7 +106,7 @@ public class SecurityController {
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")
     @GetMapping("/admins")
     public ResponseEntity<List<Security>> getAdmins() {
-       return ResponseEntity.ok(securityService.getAllAdmins());
+        return ResponseEntity.ok(securityService.getAllAdmins());
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'OWNER', 'MODERATOR')")

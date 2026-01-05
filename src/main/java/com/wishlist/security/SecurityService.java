@@ -138,15 +138,26 @@ public class SecurityService {
         return getAllSecurityByRole(Role.USER);
     }
 
-    public Optional<String> generateJwt(AuthRequest request) throws WrongPasswordException {
-        Optional<Security> security = securityRepository.findByUsername(request.getUsername());
-        if (security.isEmpty()) {
-            throw new UsernameNotFoundException(request.getUsername());
-        }
-        if (!bCryptPasswordEncoder.matches(request.getPassword(), security.get().getPassword())) {
+    public String generateAccessToken(AuthRequest request) throws WrongPasswordException {
+        Security security = securityRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException(request.getUsername()));
+
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), security.getPassword())) {
             throw new WrongPasswordException(request.getPassword());
         }
-        return Optional.ofNullable(jwtUtils.generateToken(security.get()));
+
+        return jwtUtils.generateToken(security);
+    }
+
+    public String generateRefreshToken(AuthRequest request) throws WrongPasswordException {
+        Security security = securityRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException(request.getUsername()));
+
+        if (!bCryptPasswordEncoder.matches(request.getPassword(), security.getPassword())) {
+            throw new WrongPasswordException(request.getPassword());
+        }
+
+        return jwtUtils.generateRefreshToken(security);
     }
 
     private void ensureRoleChangeAllowed(

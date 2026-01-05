@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(pathBuilder.matcher(HttpMethod.POST, "/security/registration")).permitAll()
                         .requestMatchers(pathBuilder.matcher(HttpMethod.POST, "/security/jwt")).permitAll()
+                        .requestMatchers(pathBuilder.matcher(HttpMethod.POST, "/security/refresh")).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
