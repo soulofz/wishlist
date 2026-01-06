@@ -1,5 +1,9 @@
 package com.wishlist.model;
 
+import com.wishlist.model.enums.CompletedGiftPolicy;
+import com.wishlist.model.enums.ReservationPolicy;
+import com.wishlist.model.enums.ReservationVisibilityPolicy;
+import com.wishlist.model.enums.VisibilityPolicy;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,4 +36,24 @@ public class Wishlist {
 
     @Column(nullable = false)
     private int count = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility", nullable = false)
+    private VisibilityPolicy visibilityPolicy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reservation", nullable = false)
+    private ReservationPolicy reservationPolicy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reservation_visibility", nullable = false)
+    private ReservationVisibilityPolicy reservationVisibilityPolicy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "completed_gifts", nullable = false)
+    private CompletedGiftPolicy completedGiftPolicy;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 }
