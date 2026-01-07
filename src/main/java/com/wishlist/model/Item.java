@@ -23,6 +23,8 @@ public class Item {
     @Column(nullable = false)
     private String name;
 
+    private String description;
+
     @Column(name = "shop_link", nullable = false)
     private String shopLink;
 
