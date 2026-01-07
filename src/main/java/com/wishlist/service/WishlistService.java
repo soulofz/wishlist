@@ -87,7 +87,7 @@ public class WishlistService {
     }
 
     @Transactional
-    public Wishlist createWishlist(WishlistRequestDto wishlistRequestDto) {
+    public WishlistExtendedResponseDto createWishlist(WishlistRequestDto wishlistRequestDto) {
         User user = userService.getCurrentUser();
 
         validateWishlistRequest(wishlistRequestDto);
@@ -96,10 +96,11 @@ public class WishlistService {
         wishlist.setOwner(user);
         wishlist.setCreated(LocalDateTime.now());
         wishlist.setUpdated(LocalDateTime.now());
+        wishlistRepository.save(wishlist);
 
         log.info("Creating wishlist '{}' for user '{}'", wishlist.getName(), user.getSecurity().getUsername());
 
-        return wishlistRepository.save(wishlist);
+        return convertToExtendedDto(wishlist);
 
     }
 
