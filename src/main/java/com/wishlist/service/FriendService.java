@@ -6,8 +6,6 @@ import com.wishlist.model.FriendKey;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.FriendResponseDto;
 import com.wishlist.repository.FriendRepository;
-import com.wishlist.repository.FriendRequestRepository;
-import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,5 +55,18 @@ public class FriendService {
             friendsResponseDto.add(friendResponseDto);
         }
         return friendsResponseDto;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean areFriends(User user1, User user2) {
+        if (user1 == null || user2 == null) {
+            return false;
+        }
+
+        if (user1.getId().equals(user2.getId())) {
+            return true;
+        }
+
+        return friendRepository.existsById(new FriendKey(user1.getId(), user2.getId()));
     }
 }
