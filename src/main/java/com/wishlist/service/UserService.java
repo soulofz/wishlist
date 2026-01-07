@@ -4,7 +4,7 @@ import com.wishlist.exception.AvatarUploadException;
 import com.wishlist.model.Security;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.UserResponseDto;
-import com.wishlist.model.dto.UserUpdateDto;
+import com.wishlist.model.dto.UserRequestDto;
 import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
 import com.wishlist.security.SecurityService;
@@ -90,7 +90,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto updateAccount(UserUpdateDto dto) {
+    public UserResponseDto updateAccount(UserRequestDto dto) {
         User user = getCurrentUser();
 
         if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) {

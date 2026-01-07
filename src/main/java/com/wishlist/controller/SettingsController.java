@@ -2,7 +2,7 @@ package com.wishlist.controller;
 
 import com.wishlist.model.dto.SecurityUpdateDto;
 import com.wishlist.model.dto.UserResponseDto;
-import com.wishlist.model.dto.UserUpdateDto;
+import com.wishlist.model.dto.UserRequestDto;
 import com.wishlist.security.SecurityService;
 import com.wishlist.service.UserService;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ public class SettingsController {
     }
 
     @PutMapping("/account")
-    public ResponseEntity<UserResponseDto> updateAccount(@Valid @RequestBody UserUpdateDto dto) {
+    public ResponseEntity<UserResponseDto> updateAccount(@Valid @RequestBody UserRequestDto dto) {
         return ResponseEntity.ok(userService.updateAccount(dto));
     }
 
