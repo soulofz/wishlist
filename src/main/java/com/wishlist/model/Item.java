@@ -35,7 +35,7 @@ public class Item {
     @Column(name = "currency", nullable = false)
     private Currency currency = Currency.USD;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
@@ -46,4 +46,8 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "wishlist_id", nullable = false)
     private Wishlist wishlist;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reserved_by")
+    private User user;
 }
