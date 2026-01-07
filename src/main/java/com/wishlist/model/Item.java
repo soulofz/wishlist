@@ -1,6 +1,7 @@
 package com.wishlist.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.wishlist.model.enums.Currency;
 import com.wishlist.model.enums.ItemStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +28,10 @@ public class Item {
 
     @Column(nullable = false)
     private Long price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "currency", nullable = false)
+    private Currency currency = Currency.USD;
 
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
