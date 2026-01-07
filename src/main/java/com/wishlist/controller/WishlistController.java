@@ -1,6 +1,5 @@
 package com.wishlist.controller;
 
-import com.wishlist.model.Wishlist;
 import com.wishlist.model.dto.WishlistExtendedResponseDto;
 import com.wishlist.model.dto.WishlistRequestDto;
 import com.wishlist.model.dto.WishlistResponseDto;
