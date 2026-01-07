@@ -6,8 +6,11 @@ import com.wishlist.model.enums.ReservationVisibilityPolicy;
 import com.wishlist.model.enums.VisibilityPolicy;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity(name = "wishlists")
@@ -36,6 +39,12 @@ public class Wishlist {
 
     @Column(nullable = false)
     private int count = 0;
+
+    @CreationTimestamp
+    private LocalDateTime created;
+
+    @UpdateTimestamp
+    private LocalDateTime updated;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "visibility", nullable = false)
