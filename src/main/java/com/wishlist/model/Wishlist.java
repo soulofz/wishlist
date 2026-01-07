@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = "items")
 @ToString(exclude = "items")
-
 public class Wishlist {
 
     @Id

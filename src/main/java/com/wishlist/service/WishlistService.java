@@ -53,7 +53,7 @@ public class WishlistService {
         return responseDto;
     }
 
-    private  WishlistResponseDto convertToResponseDto(Wishlist wishlist) {
+    private WishlistResponseDto convertToResponseDto(Wishlist wishlist) {
         WishlistResponseDto responseDto = new WishlistResponseDto();
         responseDto.setName(wishlist.getName());
         responseDto.setEndDate(wishlist.getEndDate());
