@@ -21,7 +21,7 @@ public class WishlistController {
         this.wishlistService = wishlistService;
     }
 
-    @GetMapping("/my")
+    @GetMapping
     ResponseEntity<List<WishlistResponseDto>> getMyWishlists() {
         List<WishlistResponseDto> wishlists = wishlistService.getMyWishlists();
         return ResponseEntity.ok(wishlists);
