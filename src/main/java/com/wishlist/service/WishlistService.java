@@ -24,13 +24,15 @@ public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final UserService userService;
     private final WishlistPolicyService wishlistPolicyService;
+    private final ItemService itemService;
 
     public WishlistService(WishlistRepository wishlistRepository,
                            UserService userService,
-                           WishlistPolicyService wishlistPolicyService) {
+                           WishlistPolicyService wishlistPolicyService, ItemService itemService) {
         this.wishlistRepository = wishlistRepository;
         this.userService = userService;
         this.wishlistPolicyService = wishlistPolicyService;
+        this.itemService = itemService;
     }
 
     private static Wishlist mapToEntity(WishlistRequestDto wishlistRequestDto) {
@@ -49,7 +51,7 @@ public class WishlistService {
         responseDto.setName(wishlist.getName());
         responseDto.setEndDate(wishlist.getEndDate());
         responseDto.setCount(wishlist.getCount());
-        // TODO добавить лист подарков
+        responseDto.setItems(itemService.getAllWishlistItems(wishlist));
         return responseDto;
     }
 
