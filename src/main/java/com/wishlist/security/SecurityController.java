@@ -5,6 +5,7 @@ import com.wishlist.exception.WrongPasswordException;
 import com.wishlist.model.Security;
 import com.wishlist.model.dto.AuthRequest;
 import com.wishlist.model.dto.AuthResponse;
+import com.wishlist.model.dto.RefreshTokenDto;
 import com.wishlist.model.dto.UserRegistrationDto;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
@@ -69,13 +70,13 @@ public class SecurityController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<String> refreshToken(@RequestBody String refreshToken) {
+    public ResponseEntity<String> refreshToken(@RequestBody RefreshTokenDto refreshToken) {
         try {
-            String username = jwtUtils.getUsernameFromToken(refreshToken);
+            String username = jwtUtils.getUsernameFromToken(refreshToken.getRefreshToken());
             Security security = securityService.getSecurityByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException(username));
 
-            if (security != null && jwtUtils.validateToken(refreshToken)) {
+            if (security != null && jwtUtils.validateToken(refreshToken.getRefreshToken())) {
                 String newAccessToken = jwtUtils.generateToken(security);
                 return ResponseEntity.ok(newAccessToken);
             }
