@@ -1,7 +1,8 @@
 package com.wishlist.model.dto;
 
 import com.wishlist.model.enums.Currency;
-import com.wishlist.model.enums.ItemStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,17 +10,21 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemResponseDto {
+public class ItemRequestDto {
 
+    @NotBlank
     private String name;
-    private String description;
-    private String shopLink;
 
+    private String description;
+
+    @NotNull
     private Long price;
+
+    @NotBlank
     private Currency currency;
 
-    private String imageUrl;
+    @NotBlank
+    private String shopLink;
 
-    private ItemStatus status;
-
+    private String imageLink;
 }
