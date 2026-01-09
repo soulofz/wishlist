@@ -68,4 +68,10 @@ public class CustomExceptionHandler {
         log.warn("Friend request not found: {}", e.getMessage());
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ItemNotFoundException.class)
+    public ResponseEntity<HttpStatusCode> itemNotFoundException(ItemNotFoundException e) {
+        log.warn("Item not found: {}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
 }

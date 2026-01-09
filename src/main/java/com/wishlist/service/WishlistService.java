@@ -46,7 +46,7 @@ public class WishlistService {
         return wishlist;
     }
 
-    private WishlistExtendedResponseDto convertToExtendedDto(Wishlist wishlist) {
+    public WishlistExtendedResponseDto convertToExtendedDto(Wishlist wishlist) {
         WishlistExtendedResponseDto responseDto = new WishlistExtendedResponseDto();
         responseDto.setName(wishlist.getName());
         responseDto.setEndDate(wishlist.getEndDate());
@@ -55,7 +55,7 @@ public class WishlistService {
         return responseDto;
     }
 
-    private WishlistResponseDto convertToResponseDto(Wishlist wishlist) {
+    public WishlistResponseDto convertToResponseDto(Wishlist wishlist) {
         WishlistResponseDto responseDto = new WishlistResponseDto();
         responseDto.setName(wishlist.getName());
         responseDto.setEndDate(wishlist.getEndDate());
@@ -173,7 +173,7 @@ public class WishlistService {
         }
     }
 
-    public WishlistExtendedResponseDto getWishlistById(long id) {
+    public Wishlist getWishlistById(long id) {
 
         User viewer = tryToGetCurrentUser();
 
@@ -182,7 +182,7 @@ public class WishlistService {
 
         checkWishlistAccess(wishlist, viewer);
 
-        return convertToExtendedDto(wishlist);
+        return wishlist;
     }
 
     public List<WishlistResponseDto> getAllUserWishlists(String username) {

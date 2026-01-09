@@ -1,5 +1,6 @@
 package com.wishlist.service;
 
+import com.wishlist.exception.ItemNotFoundException;
 import com.wishlist.model.Item;
 import com.wishlist.model.User;
 import com.wishlist.model.Wishlist;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -55,7 +57,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file, Wishlist wishlist) throws IOException {
+    public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file , Wishlist wishlist) throws IOException {
         String imageUrl = getImageUrl(itemRequestDto, file);
 
         Item item = new Item();
@@ -100,6 +102,10 @@ public class ItemService {
         Item item = getItemById(id);
         itemRepository.delete(item);
 
+        if (item.getImageUrl() != null && !item.getImageUrl().isBlank()) {
+            cloudImageService.deleteImage(item.getImageUrl());
+        }
+
         int newCount = wishlist.getCount() - 1;
 
         wishlist.setCount(newCount);
@@ -117,10 +123,8 @@ public class ItemService {
     }
 
     public Item getItemById(Long id) {
-        if (itemRepository.existsById(id)) {
-            return itemRepository.findById(id).get();
-        }
-        return null;
+        Optional<Item> item = itemRepository.findById(id);
+        return item.orElse(null);
     }
 
     public List<ItemResponseDto> getAllReservedItemsForUser() {

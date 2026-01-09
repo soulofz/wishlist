@@ -20,7 +20,7 @@ public class ItemRequestDto {
     @NotNull
     private Long price;
 
-    @NotBlank
+    @NotNull
     private Currency currency;
 
     @NotBlank
