@@ -7,7 +7,6 @@ import com.wishlist.model.dto.WishlistRequestDto;
 import com.wishlist.model.dto.WishlistResponseDto;
 import com.wishlist.service.ItemService;
 import com.wishlist.service.WishlistService;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -72,14 +71,36 @@ public class WishlistController {
     }
 
     @PostMapping("/{id:[0-9]+}/items")
-    ResponseEntity<WishlistExtendedResponseDto> addItem(@PathVariable("id") Long id, @ModelAttribute ItemRequestDto itemRequestDto , @RequestPart(required = false) MultipartFile image) throws IOException {
+    ResponseEntity<WishlistExtendedResponseDto> addItem(@PathVariable("id") Long id, @ModelAttribute ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
         Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
         if (wishlistFromDB == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        itemService.createItem(itemRequestDto,image,wishlistFromDB);
+        itemService.createItem(itemRequestDto, image, wishlistFromDB);
         WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
 
         return ResponseEntity.ok(wishlist);
+    }
+
+    @PutMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}"))
+    ResponseEntity<WishlistExtendedResponseDto> updateItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId, @ModelAttribute ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
+        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+        if (wishlistFromDB == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        itemService.updateItem(itemId, itemRequestDto, image);
+        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+        return ResponseEntity.ok(wishlist);
+    }
+
+    @DeleteMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}"))
+    ResponseEntity<WishlistExtendedResponseDto> deleteItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId) throws IOException {
+    Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+    if (wishlistFromDB == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+    itemService.deleteItem(itemId,wishlistFromDB);
+    WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+    return ResponseEntity.ok(wishlist);
     }
 }

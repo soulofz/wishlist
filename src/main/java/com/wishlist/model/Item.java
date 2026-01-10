@@ -38,6 +38,9 @@ public class Item {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ItemStatus status = ItemStatus.AVAILABLE;

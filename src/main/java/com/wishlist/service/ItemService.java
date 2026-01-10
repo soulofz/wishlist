@@ -1,6 +1,5 @@
 package com.wishlist.service;
 
-import com.wishlist.exception.ItemNotFoundException;
 import com.wishlist.model.Item;
 import com.wishlist.model.User;
 import com.wishlist.model.Wishlist;
@@ -9,6 +8,7 @@ import com.wishlist.model.dto.ItemResponseDto;
 import com.wishlist.model.enums.ItemStatus;
 import com.wishlist.repository.ItemRepository;
 import com.wishlist.repository.WishlistRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,13 +46,15 @@ public class ItemService {
         return itemResponseDto;
     }
 
-    public String getImageUrl(ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
+    public CloudImageService.CloudImageUploadResult getImageInfo(ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
         if (itemRequestDto.getImageLink() != null && !itemRequestDto.getImageLink().isBlank()) {
-            return itemRequestDto.getImageLink();
+            return new CloudImageService.CloudImageUploadResult(itemRequestDto.getImageLink(),null);
+
         } else if (file != null && !file.isEmpty()) {
-            return cloudImageService.uploadImage(file, "items");
+            CloudImageService.CloudImageUploadResult responseDto = cloudImageService.uploadImage(file, "items");
+            return new CloudImageService.CloudImageUploadResult(responseDto.imageUrl(), responseDto.publicId());
         }
-        return null;
+        return new CloudImageService.CloudImageUploadResult(null, null);
     }
 
     private boolean isCloudinaryImage(String imageUrl) {
@@ -62,7 +63,10 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file , Wishlist wishlist) throws IOException {
-        String imageUrl = getImageUrl(itemRequestDto, file);
+
+        CloudImageService.CloudImageUploadResult cloudImageUploadResult = getImageInfo(itemRequestDto, file);
+        String imageUrl = cloudImageUploadResult.imageUrl();
+        String publicId = cloudImageUploadResult.publicId();
 
         Item item = new Item();
         item.setName(itemRequestDto.getName());
@@ -71,6 +75,7 @@ public class ItemService {
         item.setPrice(itemRequestDto.getPrice());
         item.setCurrency(itemRequestDto.getCurrency());
         item.setImageUrl(imageUrl);
+        item.setImagePublicId(publicId);
         item.setStatus(ItemStatus.AVAILABLE);
         item.setWishlist(wishlist);
         item.setUser(null);
@@ -89,11 +94,13 @@ public class ItemService {
         Item item = getItemById(id);
 
         String oldImageUrl = item.getImageUrl();
-        String newImageUrl = getImageUrl(itemRequestDto, file);
+
+        CloudImageService.CloudImageUploadResult cloudImageUploadResult = getImageInfo(itemRequestDto, file);
+        String newImageUrl = cloudImageUploadResult.imageUrl();
 
         if (newImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
             if (isCloudinaryImage(oldImageUrl)) {
-                cloudImageService.deleteImage(oldImageUrl);
+                cloudImageService.deleteImage(item.getImagePublicId());
             }
             item.setImageUrl(newImageUrl);
         }
@@ -112,12 +119,11 @@ public class ItemService {
     @Transactional
     public void deleteItem(Long id, Wishlist wishlist) throws IOException {
         Item item = getItemById(id);
-        itemRepository.delete(item);
-
         if (item.getImageUrl() != null && !item.getImageUrl().isBlank()) {
-            cloudImageService.deleteImage(item.getImageUrl());
+            cloudImageService.deleteImage(item.getImagePublicId());
         }
 
+        itemRepository.delete(item);
         int newCount = wishlist.getCount() - 1;
 
         wishlist.setCount(newCount);
@@ -135,8 +141,10 @@ public class ItemService {
     }
 
     public Item getItemById(Long id) {
-        Optional<Item> item = itemRepository.findById(id);
-        return item.orElse(null);
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Item not found"));
+
+        return item;
     }
 
     public List<ItemResponseDto> getAllReservedItemsForUser() {
