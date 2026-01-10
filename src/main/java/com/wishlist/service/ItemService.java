@@ -56,6 +56,10 @@ public class ItemService {
         return null;
     }
 
+    private boolean isCloudinaryImage(String imageUrl) {
+        return imageUrl != null && imageUrl.contains("res.cloudinary.com");
+    }
+
     @Transactional
     public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file , Wishlist wishlist) throws IOException {
         String imageUrl = getImageUrl(itemRequestDto, file);
@@ -82,15 +86,23 @@ public class ItemService {
 
     @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
-        String imageUrl = getImageUrl(itemRequestDto, file);
-
         Item item = getItemById(id);
+
+        String oldImageUrl = item.getImageUrl();
+        String newImageUrl = getImageUrl(itemRequestDto, file);
+
+        if (newImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
+            if (isCloudinaryImage(oldImageUrl)) {
+                cloudImageService.deleteImage(oldImageUrl);
+            }
+            item.setImageUrl(newImageUrl);
+        }
+
         item.setName(itemRequestDto.getName());
         item.setDescription(itemRequestDto.getDescription());
         item.setShopLink(itemRequestDto.getShopLink());
         item.setPrice(itemRequestDto.getPrice());
         item.setCurrency(itemRequestDto.getCurrency());
-        item.setImageUrl(imageUrl);
 
         itemRepository.save(item);
 
