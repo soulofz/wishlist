@@ -21,5 +21,6 @@ public class ItemResponseDto {
     private String imageUrl;
 
     private ItemStatus status;
+    private String reservedBy;
 
 }

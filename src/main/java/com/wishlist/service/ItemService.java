@@ -38,6 +38,16 @@ public class ItemService {
     }
 
     public ItemResponseDto convertToDto(Item item) {
+        String username;
+        try{
+            if(item.getUser() != null) {
+                username = item.getUser().getSecurity().getUsername();
+            }else {
+                username = null;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         ItemResponseDto itemResponseDto = new ItemResponseDto();
         itemResponseDto.setName(item.getName());
         itemResponseDto.setDescription(item.getDescription());
@@ -46,6 +56,7 @@ public class ItemService {
         itemResponseDto.setCurrency(item.getCurrency());
         itemResponseDto.setImageUrl(item.getImageUrl());
         itemResponseDto.setStatus(item.getStatus());
+        itemResponseDto.setReservedBy(username);
         return itemResponseDto;
     }
 
@@ -172,7 +183,7 @@ public class ItemService {
         if (!wishlistPolicyService.isVisibleForUser(wishlist, user)) {
             throw new AccessDeniedException("Wishlist is not visible for you");
         }
-        if (!wishlistPolicyService.canReserveItems(wishlist,user)){
+        if (!wishlistPolicyService.canReserveItems(wishlist, user)) {
             throw new AccessDeniedException("You can't reserve this item");
         }
         if (item.getStatus() != ItemStatus.AVAILABLE) {
