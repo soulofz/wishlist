@@ -10,6 +10,7 @@ import com.wishlist.repository.ItemRepository;
 import com.wishlist.repository.WishlistRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,12 +27,14 @@ public class ItemService {
     private final UserService userService;
     private final ItemRepository itemRepository;
     private final CloudImageService cloudImageService;
+    private final WishlistPolicyService wishlistPolicyService;
 
-    public ItemService(ItemRepository itemRepository, CloudImageService cloudImageService, WishlistRepository wishlistRepository, UserService userService) {
+    public ItemService(ItemRepository itemRepository, CloudImageService cloudImageService, WishlistRepository wishlistRepository, UserService userService, WishlistPolicyService wishlistPolicyService) {
         this.itemRepository = itemRepository;
         this.cloudImageService = cloudImageService;
         this.wishlistRepository = wishlistRepository;
         this.userService = userService;
+        this.wishlistPolicyService = wishlistPolicyService;
     }
 
     public ItemResponseDto convertToDto(Item item) {
@@ -48,7 +51,7 @@ public class ItemService {
 
     public CloudImageService.CloudImageUploadResult getImageInfo(ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
         if (itemRequestDto.getImageLink() != null && !itemRequestDto.getImageLink().isBlank()) {
-            return new CloudImageService.CloudImageUploadResult(itemRequestDto.getImageLink(),null);
+            return new CloudImageService.CloudImageUploadResult(itemRequestDto.getImageLink(), null);
 
         } else if (file != null && !file.isEmpty()) {
             CloudImageService.CloudImageUploadResult responseDto = cloudImageService.uploadImage(file, "items");
@@ -62,7 +65,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file , Wishlist wishlist) throws IOException {
+    public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file, Wishlist wishlist) throws IOException {
 
         CloudImageService.CloudImageUploadResult cloudImageUploadResult = getImageInfo(itemRequestDto, file);
         String imageUrl = cloudImageUploadResult.imageUrl();
@@ -158,5 +161,48 @@ public class ItemService {
             resultList.add(responseDto);
         }
         return resultList;
+    }
+
+    @Transactional
+    public void reserveItem(Long id) throws IOException {
+        Item item = getItemById(id);
+        User user = userService.getCurrentUser();
+        Wishlist wishlist = item.getWishlist();
+
+        if (!wishlistPolicyService.isVisibleForUser(wishlist, user)) {
+            throw new AccessDeniedException("Wishlist is not visible for you");
+        }
+        if (!wishlistPolicyService.canReserveItems(wishlist,user)){
+            throw new AccessDeniedException("You can't reserve this item");
+        }
+        if (item.getStatus() != ItemStatus.AVAILABLE) {
+            throw new IllegalStateException("Item is not available for reservation.");
+        }
+
+        item.setStatus(ItemStatus.RESERVED);
+        item.setUser(user);
+        itemRepository.save(item);
+    }
+
+    @Transactional
+    public void unreserveItem(Long id) throws IOException {
+        Item item = getItemById(id);
+        User user = userService.getCurrentUser();
+        Wishlist wishlist = item.getWishlist();
+
+        if (!wishlistPolicyService.isVisibleForUser(wishlist, user)) {
+            throw new AccessDeniedException("Wishlist is not visible for you");
+        }
+
+        if (item.getStatus() != ItemStatus.RESERVED) {
+            throw new IllegalStateException("Item is not reserved.");
+        }
+        if (item.getUser() == null || !item.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("You art not allowed to unreserve this item.");
+        }
+
+        item.setStatus(ItemStatus.AVAILABLE);
+        item.setUser(null);
+        itemRepository.save(item);
     }
 }

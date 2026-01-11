@@ -103,4 +103,26 @@ public class WishlistController {
     WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
     return ResponseEntity.ok(wishlist);
     }
+
+    @PutMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}/reserve"))
+    ResponseEntity<WishlistExtendedResponseDto> reserveItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId) throws IOException {
+        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+        if (wishlistFromDB == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        itemService.reserveItem(itemId);
+        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+        return ResponseEntity.ok(wishlist);
+    }
+
+    @PutMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}/unreserve"))
+    ResponseEntity<WishlistExtendedResponseDto> unreserveItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId) throws IOException {
+        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+        if (wishlistFromDB == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        itemService.unreserveItem(itemId);
+        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+        return ResponseEntity.ok(wishlist);
+    }
 }
