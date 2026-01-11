@@ -33,6 +33,7 @@ import java.util.Optional;
 public class UserService {
 
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+    private final CloudImageService cloudImageService;
 
     @Value("${app.storage.root}")
     private String storageRoot;
@@ -46,10 +47,11 @@ public class UserService {
 
     public UserService(UserRepository userRepository,
                        SecurityService securityService,
-                       SecurityRepository securityRepository) {
+                       SecurityRepository securityRepository, CloudImageService cloudImageService) {
         this.userRepository = userRepository;
         this.securityService = securityService;
         this.securityRepository = securityRepository;
+        this.cloudImageService = cloudImageService;
     }
 
     public User getCurrentUser() {
@@ -58,6 +60,16 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Optional<User> getUserById(long id) {
+        return userRepository.findById(id);
+    }
+
+    public User getUserByUsername(String username) {
+        Security security = securityRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        return security.getUser();
     }
 
     public UserResponseDto convertToDto(User user) {
@@ -79,18 +91,8 @@ public class UserService {
         return userResponseDto;
     }
 
-    public User getUserByUsername(String username) {
-        Security security = securityRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
-        return security.getUser();
-    }
-
-    public Optional<User> getUserById(long id) {
-        return userRepository.findById(id);
-    }
-
     @Transactional
-    public UserResponseDto updateAccount(UserRequestDto dto) {
+    public UserResponseDto updateAccount(UserRequestDto dto, MultipartFile file) throws IOException {
         User user = getCurrentUser();
 
         if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) {
@@ -105,122 +107,45 @@ public class UserService {
             }
             user.setBirthday(dto.getBirthday());
         }
+        if (file != null && !file.isEmpty()) {
+            validateAvatarFile(file);
+            if (user.getAvatarPublicId() != null){
+                cloudImageService.deleteImage(user.getAvatarPublicId());
+            }
+            CloudImageService.CloudImageUploadResult uploadResult = cloudImageService.uploadImage(file,"users");
+            user.setAvatarPath(uploadResult.imageUrl());
+            user.setAvatarPublicId(uploadResult.publicId());
+        }
 
         userRepository.save(user);
         return convertToDto(user);
     }
 
     @Transactional
-    public void uploadAvatar(MultipartFile file) {
-
+    public void deleteUser(){
+        Security security = securityService.getCurrentSecurity();
         User user = getCurrentUser();
-        String username = user.getSecurity().getUsername();
 
-        validateAvatarFile(file);
-
-        String extension = getExtensionFromContentType(file.getContentType());
-
-        try {
-            Path userAvatarDir = Paths.get(storageRoot, avatarsDir, username);
-            Files.createDirectories(userAvatarDir);
-
-            try (var paths = Files.list(userAvatarDir)) {
-                paths.forEach(path -> {
-                    try {
-                        Files.deleteIfExists(path);
-                    } catch (IOException e) {
-                        log.warn("Failed to delete old avatar file: {}", path, e);
-                    }
-                });
-            }
-
-            Path avatarPath = userAvatarDir.resolve("avatar" + extension);
-            Files.copy(file.getInputStream(), avatarPath, StandardCopyOption.REPLACE_EXISTING);
-
-            user.setAvatarPath(Paths.get(avatarsDir, username, "avatar" + extension).toString());
-
-            userRepository.save(user);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload avatar", e);
+        if (user.getAvatarPublicId() != null){
+            cloudImageService.deleteImage(user.getAvatarPublicId());
         }
+
+        userRepository.delete(user);
+        securityRepository.delete(security);
     }
 
     private void validateAvatarFile(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new AvatarUploadException("File is empty");
+            throw new RuntimeException("Avatar file is empty");
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new AvatarUploadException("Only image files allowed");
+            throw new RuntimeException("Only image files allowed");
         }
 
         if (file.getSize() > MAX_AVATAR_SIZE) {
-            throw new AvatarUploadException("File is too large");
+            throw new RuntimeException("Avatar file is too large");
         }
-    }
-
-    private String getExtensionFromContentType(String contentType) {
-        switch (contentType.toLowerCase()) {
-            case "image/jpeg":
-                return ".jpg";
-            case "image/png":
-                return ".png";
-            case "image/gif":
-                throw new AvatarUploadException("GIF is not allowed");
-            case "image/webp":
-                return ".webp";
-            case "image/bmp":
-                return ".bmp";
-            case "image/svg+xml":
-                throw new AvatarUploadException("SVG is not allowed");
-            default:
-                return ".jpg";
-        }
-    }
-
-    @Transactional
-    public void deleteAvatar() {
-        User user = getCurrentUser();
-
-        if (user.getAvatarPath() == null || user.getAvatarPath().isEmpty()) {
-            return;
-        }
-
-        try {
-            Path avatarPath = Paths.get(storageRoot).resolve(user.getAvatarPath());
-            Files.deleteIfExists(avatarPath);
-
-            user.setAvatarPath(null);
-            userRepository.save(user);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to delete avatar", e);
-        }
-    }
-
-    public ResponseEntity<Resource> getAvatar(User user) {
-        if (user.getAvatarPath() == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Path path = Paths.get(storageRoot).resolve(user.getAvatarPath());
-        if (!Files.exists(path)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Resource resource = new FileSystemResource(path);
-
-        String contentType;
-        try {
-            contentType = Files.probeContentType(path);
-        } catch (IOException e) {
-            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(resource);
     }
 }

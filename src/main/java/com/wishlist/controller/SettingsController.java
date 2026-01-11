@@ -6,10 +6,11 @@ import com.wishlist.model.dto.UserRequestDto;
 import com.wishlist.security.SecurityService;
 import com.wishlist.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/settings")
@@ -24,25 +25,8 @@ public class SettingsController {
     }
 
     @PutMapping("/account")
-    public ResponseEntity<UserResponseDto> updateAccount(@Valid @RequestBody UserRequestDto dto) {
-        return ResponseEntity.ok(userService.updateAccount(dto));
-    }
-
-    @PostMapping("/account/avatar")
-    public ResponseEntity<Void> uploadAvatar(@RequestParam MultipartFile file) {
-        userService.uploadAvatar(file);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/account/avatar")
-    public ResponseEntity<Void> deleteAvatar() {
-        userService.deleteAvatar();
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/account/avatar")
-    public ResponseEntity<Resource> getMyAvatar() {
-        return userService.getAvatar(userService.getCurrentUser());
+    public ResponseEntity<UserResponseDto> updateAccount(@Valid @ModelAttribute UserRequestDto dto , MultipartFile file) throws IOException {
+        return ResponseEntity.ok(userService.updateAccount(dto,file));
     }
 
     @PutMapping("/security")

@@ -3,12 +3,8 @@ package com.wishlist.controller;
 import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.UserResponseDto;
-import com.wishlist.repository.SecurityRepository;
-import com.wishlist.repository.UserRepository;
 import com.wishlist.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,16 +21,9 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
 
-    @Value("${app.storage.root}")
-    private String storageRoot;
-
-    private final UserRepository userRepository;
-    private final SecurityRepository securityRepository;
     private final UserService userService;
 
-    public UserController(UserRepository userRepository, SecurityRepository securityRepository, UserService userService) {
-        this.userRepository = userRepository;
-        this.securityRepository = securityRepository;
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -71,14 +60,5 @@ public class UserController {
         User user = userService.getUserByUsername(username);
         UserResponseDto userResponseDto = userService.convertToDto(user);
         return ResponseEntity.ok(userResponseDto);
-    }
-
-    @GetMapping("/{username}/avatar")
-    public ResponseEntity<Resource> getUserAvatar(@PathVariable String username) {
-        User user = securityRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(-1))
-                .getUser();
-
-        return userService.getAvatar(user);
     }
 }

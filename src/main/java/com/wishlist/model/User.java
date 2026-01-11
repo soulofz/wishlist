@@ -28,6 +28,9 @@ public class User {
     @Column(name = "avatar_path")
     private String avatarPath;
 
+    @Column(name = "avatar_public_id")
+    private String avatarPublicId;
+
     @Column(name = "first_name")
     private String firstName;
 
