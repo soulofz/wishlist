@@ -5,7 +5,7 @@ import com.wishlist.model.Item;
 public class ItemNotFoundException extends Exception {
     private Item item;
 
-    public ItemNotFoundException(String message){
+    public ItemNotFoundException(String message) {
         super(message);
     }
 

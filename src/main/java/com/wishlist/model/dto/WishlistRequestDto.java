@@ -18,15 +18,19 @@ public class WishlistRequestDto {
 
     @NotBlank
     private String name;
+
     @NotNull
     private LocalDate endDate;
 
     @NotNull
     private VisibilityPolicy visibilityPolicy;
+
     @NotNull
     private ReservationPolicy reservationPolicy;
+
     @NotNull
     private ReservationVisibilityPolicy reservationVisibilityPolicy;
+
     @NotNull
     private CompletedGiftPolicy completedGiftPolicy;
 }

@@ -1,6 +1,5 @@
 package com.wishlist.service;
 
-import com.wishlist.exception.AvatarUploadException;
 import com.wishlist.model.Security;
 import com.wishlist.model.User;
 import com.wishlist.model.dto.UserResponseDto;
@@ -9,21 +8,12 @@ import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
 import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -34,12 +24,6 @@ public class UserService {
 
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024;
     private final CloudImageService cloudImageService;
-
-    @Value("${app.storage.root}")
-    private String storageRoot;
-
-    @Value("${app.storage.avatars}")
-    private String avatarsDir;
 
     private final SecurityService securityService;
     private final UserRepository userRepository;

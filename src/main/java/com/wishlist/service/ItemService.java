@@ -29,7 +29,11 @@ public class ItemService {
     private final CloudImageService cloudImageService;
     private final WishlistPolicyService wishlistPolicyService;
 
-    public ItemService(ItemRepository itemRepository, CloudImageService cloudImageService, WishlistRepository wishlistRepository, UserService userService, WishlistPolicyService wishlistPolicyService) {
+    public ItemService(ItemRepository itemRepository,
+                       CloudImageService cloudImageService,
+                       WishlistRepository wishlistRepository,
+                       UserService userService,
+                       WishlistPolicyService wishlistPolicyService) {
         this.itemRepository = itemRepository;
         this.cloudImageService = cloudImageService;
         this.wishlistRepository = wishlistRepository;
@@ -39,10 +43,10 @@ public class ItemService {
 
     public ItemResponseDto convertToDto(Item item) {
         String username;
-        try{
-            if(item.getUser() != null) {
+        try {
+            if (item.getUser() != null) {
                 username = item.getUser().getSecurity().getUsername();
-            }else {
+            } else {
                 username = null;
             }
         } catch (Exception e) {

@@ -25,16 +25,13 @@ public class FriendRequestService {
     private final FriendRepository friendRepository;
     private final FriendRequestRepository friendRequestRepository;
     private final UserService userService;
-    private final SecurityService securityService;
 
     public FriendRequestService(FriendRequestRepository friendRequestRepository,
                                 FriendRepository friendRepository,
-                                UserService userService,
-                                SecurityService securityService) {
+                                UserService userService) {
         this.friendRequestRepository = friendRequestRepository;
         this.friendRepository = friendRepository;
         this.userService = userService;
-        this.securityService = securityService;
     }
 
     private void createFriendRequest(User sender, User receiver, FriendRequestStatus status) {

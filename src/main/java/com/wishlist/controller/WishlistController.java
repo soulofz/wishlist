@@ -95,13 +95,13 @@ public class WishlistController {
 
     @DeleteMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}"))
     ResponseEntity<WishlistExtendedResponseDto> deleteItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId) throws IOException {
-    Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
-    if (wishlistFromDB == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-    itemService.deleteItem(itemId,wishlistFromDB);
-    WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
-    return ResponseEntity.ok(wishlist);
+        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+        if (wishlistFromDB == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        itemService.deleteItem(itemId, wishlistFromDB);
+        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+        return ResponseEntity.ok(wishlist);
     }
 
     @PutMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}/reserve"))

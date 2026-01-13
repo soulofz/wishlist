@@ -15,7 +15,6 @@ import java.util.List;
 @RequestMapping("/info")
 public class InfoController {
 
-
     private final ItemService itemService;
 
     public InfoController(ItemService itemService) {

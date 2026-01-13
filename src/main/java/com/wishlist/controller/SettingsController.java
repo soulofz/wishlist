@@ -25,8 +25,8 @@ public class SettingsController {
     }
 
     @PutMapping("/account")
-    public ResponseEntity<UserResponseDto> updateAccount(@Valid @ModelAttribute UserRequestDto dto , MultipartFile file) throws IOException {
-        return ResponseEntity.ok(userService.updateAccount(dto,file));
+    public ResponseEntity<UserResponseDto> updateAccount(@Valid @ModelAttribute UserRequestDto dto, MultipartFile file) throws IOException {
+        return ResponseEntity.ok(userService.updateAccount(dto, file));
     }
 
     @PutMapping("/security")
