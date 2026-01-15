@@ -53,6 +53,10 @@ public class WishlistController {
 
     @DeleteMapping("/{id:[0-9]+}")
     ResponseEntity<Void> deleteWishlist(@PathVariable("id") Long id) {
+        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
+        if (wishlistFromDB == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         wishlistService.deleteWishlist(id);
         return ResponseEntity.noContent().build();
     }
