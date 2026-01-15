@@ -57,9 +57,9 @@ public class WishlistPolicyService {
         }
     }
 
-    public boolean isOwnerSeeReservationDetails(Wishlist wishlist) {
+    public boolean isOwnerSeeOnlyReservedStatus(Wishlist wishlist) {
         return wishlist.getReservationVisibilityPolicy()
-                == ReservationVisibilityPolicy.FULL_VISIBLE;
+                == ReservationVisibilityPolicy.ANON_VISIBLE;
     }
 
     public boolean isReservationVisibleToOwner(Wishlist wishlist) {

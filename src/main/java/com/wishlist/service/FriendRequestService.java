@@ -9,7 +9,6 @@ import com.wishlist.model.dto.FriendRequestDto;
 import com.wishlist.model.enums.FriendRequestStatus;
 import com.wishlist.repository.FriendRepository;
 import com.wishlist.repository.FriendRequestRepository;
-import com.wishlist.security.SecurityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

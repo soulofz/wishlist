@@ -34,13 +34,13 @@ public class WishlistController {
     }
 
     @GetMapping("/user/{username}")
-    ResponseEntity<List<WishlistResponseDto>> getWishlistsForUser(@PathVariable String username) {
+    ResponseEntity<List<WishlistResponseDto>> getWishlistsForUser(@PathVariable("username") String username) {
         List<WishlistResponseDto> wishlists = wishlistService.getAllUserWishlists(username);
         return ResponseEntity.ok(wishlists);
     }
 
     @GetMapping("/{id:[0-9]+}")
-    ResponseEntity<WishlistExtendedResponseDto> getWishlistById(@PathVariable Long id) {
+    ResponseEntity<WishlistExtendedResponseDto> getWishlistById(@PathVariable("id") Long id) {
         Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
         if (wishlistFromDB == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -51,23 +51,27 @@ public class WishlistController {
         return ResponseEntity.ok(wishlist);
     }
 
-    @PostMapping
-    ResponseEntity<WishlistExtendedResponseDto> createWishlist(@RequestBody WishlistRequestDto wishlistRequestDto) {
-        WishlistExtendedResponseDto wishlist = wishlistService.createWishlist(wishlistRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(wishlist);
-    }
-
     @DeleteMapping("/{id:[0-9]+}")
-    ResponseEntity<Void> deleteWishlist(@PathVariable Long id) {
+    ResponseEntity<Void> deleteWishlist(@PathVariable("id") Long id) {
         wishlistService.deleteWishlist(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id:[0-9]+}")
-    ResponseEntity<WishlistExtendedResponseDto> updateWishlist(@PathVariable("id") Long id, @RequestBody WishlistRequestDto wishlistRequestDto) {
-        Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
-        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(wishlistFromDB);
+    ResponseEntity<WishlistExtendedResponseDto> updateWishlist(@PathVariable("id") Long id, @RequestBody WishlistRequestDto requestDto) {
+        Wishlist wishlistFromDb = wishlistService.getWishlistById(id);
+        if (wishlistFromDb == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Wishlist result = wishlistService.updateWishlist(id, requestDto);
+        WishlistExtendedResponseDto wishlist = wishlistService.convertToExtendedDto(result);
         return ResponseEntity.ok(wishlist);
+    }
+
+    @PostMapping
+    ResponseEntity<WishlistExtendedResponseDto> createWishlist(@RequestBody WishlistRequestDto wishlistRequestDto) {
+        WishlistExtendedResponseDto wishlist = wishlistService.createWishlist(wishlistRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(wishlist);
     }
 
     @PostMapping("/{id:[0-9]+}/items")

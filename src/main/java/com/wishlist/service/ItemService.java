@@ -52,6 +52,7 @@ public class ItemService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        Wishlist wishlist = item.getWishlist();
         ItemResponseDto itemResponseDto = new ItemResponseDto();
         itemResponseDto.setName(item.getName());
         itemResponseDto.setDescription(item.getDescription());
@@ -59,8 +60,14 @@ public class ItemService {
         itemResponseDto.setPrice(item.getPrice());
         itemResponseDto.setCurrency(item.getCurrency());
         itemResponseDto.setImageUrl(item.getImageUrl());
-        itemResponseDto.setStatus(item.getStatus());
-        itemResponseDto.setReservedBy(username);
+        if (wishlistPolicyService.isReservationVisibleToOwner(wishlist)){
+            if (wishlistPolicyService.isOwnerSeeOnlyReservedStatus(wishlist)){
+                itemResponseDto.setStatus(ItemStatus.RESERVED);
+                itemResponseDto.setReservedBy(null);
+            }
+            itemResponseDto.setStatus(item.getStatus());
+            itemResponseDto.setReservedBy(username);
+        }
         return itemResponseDto;
     }
 
