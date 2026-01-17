@@ -60,8 +60,8 @@ public class ItemService {
         itemResponseDto.setPrice(item.getPrice());
         itemResponseDto.setCurrency(item.getCurrency());
         itemResponseDto.setImageUrl(item.getImageUrl());
-        if (wishlistPolicyService.isReservationVisibleToOwner(wishlist)){
-            if (wishlistPolicyService.isOwnerSeeOnlyReservedStatus(wishlist)){
+        if (wishlistPolicyService.isReservationVisibleToOwner(wishlist)) {
+            if (wishlistPolicyService.isOwnerSeeOnlyReservedStatus(wishlist)) {
                 itemResponseDto.setStatus(ItemStatus.RESERVED);
                 itemResponseDto.setReservedBy(null);
             }
@@ -158,9 +158,23 @@ public class ItemService {
     public List<ItemResponseDto> getAllWishlistItems(Wishlist wishlist) {
         List<Item> itemsFromDB = itemRepository.findByWishlistId(wishlist.getId());
         List<ItemResponseDto> resultList = new ArrayList<>();
+        List<ItemResponseDto> purchased = new ArrayList<>();
+
+        boolean removeCompleted = wishlistPolicyService.shouldRemoveCompletedGift(wishlist);
+
         for (Item item : itemsFromDB) {
+            if (removeCompleted && item.getStatus().equals(ItemStatus.PURCHASED)) {
+                continue;
+            }
             ItemResponseDto responseDto = convertToDto(item);
-            resultList.add(responseDto);
+            if (!removeCompleted && item.getStatus().equals(ItemStatus.PURCHASED)) {
+                purchased.add(responseDto);
+            } else {
+                resultList.add(responseDto);
+            }
+        }
+        if (!removeCompleted) {
+            resultList.addAll(purchased);
         }
         return resultList;
     }
@@ -220,11 +234,40 @@ public class ItemService {
             throw new IllegalStateException("Item is not reserved.");
         }
         if (item.getUser() == null || !item.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("You art not allowed to unreserve this item.");
+            throw new IllegalStateException("You are not allowed to unreserve this item.");
         }
 
         item.setStatus(ItemStatus.AVAILABLE);
         item.setUser(null);
         itemRepository.save(item);
+    }
+
+    @Transactional
+    public void setCompletedStatus(Long id) throws IOException {
+        Item item = getItemById(id);
+        User user = userService.getCurrentUser();
+        Wishlist wishlist = item.getWishlist();
+
+        if (!wishlistPolicyService.isVisibleForUser(wishlist, user)) {
+            throw new AccessDeniedException("Wishlist is not visible for you");
+        }
+
+        if (!item.getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("You are not allowed to change this item");
+        }
+
+        item.setStatus(ItemStatus.PURCHASED);
+        itemRepository.save(item);
+    }
+
+    public List<ItemResponseDto> getRandomItems() {
+        List<Item> itemsFromDB = itemRepository.findRandomItems();
+
+        List<ItemResponseDto> resultList = new ArrayList<>();
+        for (Item item : itemsFromDB) {
+            ItemResponseDto responseDto = convertToDto(item);
+            resultList.add(responseDto);
+        }
+        return resultList;
     }
 }

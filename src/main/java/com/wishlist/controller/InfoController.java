@@ -26,4 +26,10 @@ public class InfoController {
         List<ItemResponseDto> result = itemService.getAllReservedItemsForUser();
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/recommendation")
+    public ResponseEntity<List<ItemResponseDto>> getRecommendationItems() {
+        List<ItemResponseDto> result = itemService.getRandomItems();
+        return ResponseEntity.ok(result);
+    }
 }
