@@ -87,7 +87,11 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemResponseDto createItem(ItemRequestDto itemRequestDto, MultipartFile file, Wishlist wishlist) throws IOException {
+    public void createItem(ItemRequestDto itemRequestDto, MultipartFile file, Wishlist wishlist) throws IOException {
+        User user = userService.getCurrentUser();
+        if (user != wishlist.getOwner()) {
+            throw new AccessDeniedException("You do not have permission to access this item");
+        }
 
         CloudImageService.CloudImageUploadResult cloudImageUploadResult = getImageInfo(itemRequestDto, file);
         String imageUrl = cloudImageUploadResult.imageUrl();
@@ -111,12 +115,19 @@ public class ItemService {
         wishlistRepository.save(wishlist);
         itemRepository.save(item);
 
-        return convertToDto(item);
+        convertToDto(item);
     }
 
     @Transactional
-    public ItemResponseDto updateItem(Long id, ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
+    public void updateItem(Long id, ItemRequestDto itemRequestDto, MultipartFile file) throws IOException {
         Item item = getItemById(id);
+
+        User user = userService.getCurrentUser();
+        Wishlist wishlist = item.getWishlist();
+
+        if (user != wishlist.getOwner()) {
+            throw new AccessDeniedException("You do not have permission to access this item");
+        }
 
         String oldImageUrl = item.getImageUrl();
 
@@ -138,12 +149,19 @@ public class ItemService {
 
         itemRepository.save(item);
 
-        return convertToDto(item);
+        convertToDto(item);
     }
 
     @Transactional
     public void deleteItem(Long id, Wishlist wishlist) throws IOException {
+        //todo проверка на юзера
         Item item = getItemById(id);
+
+        User user = userService.getCurrentUser();
+        if (user != wishlist.getOwner()) {
+            throw new AccessDeniedException("You do not have permission to access this item");
+        }
+
         if (item.getImageUrl() != null && !item.getImageUrl().isBlank()) {
             cloudImageService.deleteImage(item.getImagePublicId());
         }
