@@ -28,9 +28,6 @@ public class WishlistPolicyService {
             case FRIENDS_ONLY -> {
                 return friendService.areFriends(wishlist.getOwner(), requester);
             }
-            case PRIVATE -> {
-                return false;
-            }
             default -> {
                 return false;
             }
