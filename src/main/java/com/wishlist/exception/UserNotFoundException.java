@@ -5,11 +5,6 @@ import com.wishlist.model.User;
 public class UserNotFoundException extends RuntimeException {
     private final User user;
 
-    public UserNotFoundException(User user) {
-        super();
-        this.user = user;
-    }
-
     public UserNotFoundException(long id) {
         super();
         User user = new User();

@@ -33,11 +33,11 @@ public class FriendRequestService {
         this.userService = userService;
     }
 
-    private void createFriendRequest(User sender, User receiver, FriendRequestStatus status) {
+    private void createFriendRequest(User sender, User receiver) {
         FriendRequest newRequest = new FriendRequest();
         newRequest.setSender(sender);
         newRequest.setReceiver(receiver);
-        newRequest.setStatus(status);
+        newRequest.setStatus(FriendRequestStatus.PENDING);
         newRequest.setCreated(LocalDateTime.now());
         friendRequestRepository.save(newRequest);
     }
@@ -58,7 +58,7 @@ public class FriendRequestService {
             FriendRequest lastRequest = existingRequest.get();
 
             if (lastRequest.getStatus() == FriendRequestStatus.REJECTED || lastRequest.getStatus() == FriendRequestStatus.CANCELLED) {
-                createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+                createFriendRequest(sender, receiver);
                 return;
             }
 
@@ -69,13 +69,13 @@ public class FriendRequestService {
             if (lastRequest.getStatus() == FriendRequestStatus.ACCEPTED) {
                 FriendKey key = new FriendKey(sender.getId(), receiver.getId());
                 if (!friendRepository.existsById(key)) {
-                    createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+                    createFriendRequest(sender, receiver);
                 } else {
                     throw new IllegalStateException("You are already friends");
                 }
             }
         } else {
-            createFriendRequest(sender, receiver, FriendRequestStatus.PENDING);
+            createFriendRequest(sender, receiver);
         }
     }
 

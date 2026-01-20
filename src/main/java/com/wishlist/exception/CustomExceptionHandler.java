@@ -1,5 +1,6 @@
 package com.wishlist.exception;
 
+import com.wishlist.model.Security;
 import jakarta.xml.bind.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -58,7 +59,7 @@ public class CustomExceptionHandler {
     }
 
     @ExceptionHandler(AvatarUploadException.class)
-    public ResponseEntity<HttpStatusCode> wrongPasswordException(AvatarUploadException e) {
+    public ResponseEntity<HttpStatusCode> avatarPasswordException(AvatarUploadException e) {
         log.warn("Avatar Upload Error: {}", e.getMessage());
         return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
@@ -73,5 +74,12 @@ public class CustomExceptionHandler {
     public ResponseEntity<HttpStatusCode> itemNotFoundException(ItemNotFoundException e) {
         log.warn("Item not found: {}", e.getMessage());
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    //todo добавить секьюрити ексепшн
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<HttpStatusCode> securityException(SecurityException e) {
+        log.warn("Security exception: {}", e.getMessage());
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 }
