@@ -7,6 +7,7 @@ import com.wishlist.model.dto.WishlistRequestDto;
 import com.wishlist.model.dto.WishlistResponseDto;
 import com.wishlist.service.ItemService;
 import com.wishlist.service.WishlistService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,7 +63,7 @@ public class WishlistController {
     }
 
     @PutMapping("/{id:[0-9]+}")
-    ResponseEntity<WishlistExtendedResponseDto> updateWishlist(@PathVariable("id") Long id, @RequestBody WishlistRequestDto requestDto) {
+    ResponseEntity<WishlistExtendedResponseDto> updateWishlist(@PathVariable("id") Long id, @RequestBody @Valid WishlistRequestDto requestDto) {
         Wishlist wishlistFromDb = wishlistService.getWishlistById(id);
         if (wishlistFromDb == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -73,13 +74,13 @@ public class WishlistController {
     }
 
     @PostMapping
-    ResponseEntity<WishlistExtendedResponseDto> createWishlist(@RequestBody WishlistRequestDto wishlistRequestDto) {
+    ResponseEntity<WishlistExtendedResponseDto> createWishlist(@RequestBody @Valid WishlistRequestDto wishlistRequestDto) {
         WishlistExtendedResponseDto wishlist = wishlistService.createWishlist(wishlistRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(wishlist);
     }
 
     @PostMapping("/{id:[0-9]+}/items")
-    ResponseEntity<WishlistExtendedResponseDto> addItem(@PathVariable("id") Long id, @ModelAttribute ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
+    ResponseEntity<WishlistExtendedResponseDto> addItem(@PathVariable("id") Long id, @ModelAttribute @Valid ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
         Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
         if (wishlistFromDB == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -91,7 +92,7 @@ public class WishlistController {
     }
 
     @PutMapping(("/{id:[0-9]+}/items/{itemId:[0-9]+}"))
-    ResponseEntity<WishlistExtendedResponseDto> updateItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId, @ModelAttribute ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
+    ResponseEntity<WishlistExtendedResponseDto> updateItem(@PathVariable("id") Long id, @PathVariable("itemId") Long itemId, @ModelAttribute @Valid ItemRequestDto itemRequestDto, @RequestPart(required = false) MultipartFile image) throws IOException {
         Wishlist wishlistFromDB = wishlistService.getWishlistById(id);
         if (wishlistFromDB == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
