@@ -1,6 +1,5 @@
 package com.wishlist.security;
 
-import com.wishlist.exception.ForbiddenException;
 import com.wishlist.exception.UserNotFoundException;
 import com.wishlist.exception.UsernameExistsException;
 import com.wishlist.exception.WrongPasswordException;
@@ -12,7 +11,6 @@ import com.wishlist.model.dto.UserRegistrationDto;
 import com.wishlist.model.enums.Role;
 import com.wishlist.repository.SecurityRepository;
 import com.wishlist.repository.UserRepository;
-import com.wishlist.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
