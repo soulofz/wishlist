@@ -14,8 +14,6 @@ import java.util.Optional;
 public interface SecurityRepository extends JpaRepository<Security, Long> {
     boolean existsByUsername(String username);
 
-    boolean existsByEmail(String email);
-
     @Query("SELECT s.role FROM security s WHERE s.id = ?1")
     Role getRoleById(Long id);
 
