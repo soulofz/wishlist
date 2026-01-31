@@ -8,13 +8,13 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLException;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class CustomExceptionHandler {
 
     @ExceptionHandler(UsernameExistsException.class)
